@@ -1,7 +1,7 @@
 <template>
 <div class="playerArea">
 <div class="visulizerArea">
-
+  <visualizer/>
 </div>
 <div class="controls-cont">
   <audio id="myAudio"></audio>
@@ -32,12 +32,13 @@
 </template>
 
 <script>
+import visualizer from '@/components/visualizer.vue'
 import playbackBt from '@/components/play-pauseBt.vue'
-
 const sampleFile = require('@/assets/audio/lost-it-to-trying.mp3')
 export default {
   components:{
     playbackBt,
+    visualizer
   },
   data(){return{
     song:sampleFile,

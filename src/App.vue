@@ -2,6 +2,7 @@
 <div class="wrapper">
   <img src="@/assets/logo.svg" style="transform:scale(0.8);position:fixed;top:5px;left:5px" alt="">
   <loading/>
+  <div style="width:300px" id="waveform"></div>
   <div class="grid">
 <!-- Settings -->
     <div></div>
@@ -21,17 +22,20 @@ import start from '@/views/start.vue'
 import sideNav from '@/components/sideNav.vue'
 import player from '@/components/bottomControls.vue'
 import loading from '@/components/loading.vue'
-import "@/assets/howler.js";
 const songSrc = require('./assets/Syntax200.mp3')
+import * as WaveSurfer from "@/assets/Js/wavesurfer.js"
+import "@/assets/howler.js"
+
 import 'module';
 export default {
   data() {
     return {
       audioFile: songSrc,
-      isPlaying: false
+      isPlaying: false,
     }
   },
   mounted(){
+
     window.addEventListener('keydown',(e)=>{
       console.log(e);
       if(e.code==='Space'){
@@ -52,7 +56,15 @@ export default {
       }
       })
   
+      // var wavesurfer = WaveSurfer.create({
+      // container: '#waveform',
+      // waveColor: 'violet',
+      // progressColor: 'purple'
+      // });
+      // console.log(this.audioFile);
+      // wavesurfer.load(this.audioFile);
 
+      
   },
   methods: {
     changeState() {

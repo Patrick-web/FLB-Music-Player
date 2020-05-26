@@ -10,6 +10,7 @@
           <div class="songTitle">
               {{songTitle}} 
           </div>
+          <div id="waveform"></div>
           <!-- <div class="songDuration">{{duration}}</div> -->
           <div class="actions">
               <button class="sword addToQueue">Play Next</button>
@@ -20,7 +21,8 @@
 </template>
 
 <script>
-import 'howler'
+import * as visualiser from '@/assets/visualise.js'
+
 export default {
     data(){
         return{
@@ -28,6 +30,13 @@ export default {
         }
     },
     methods:{
+        createWav(target){
+            var wavesurfer = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: 'violet',
+                progressColor: 'purple'
+            });
+        },
         resetProgress(){
             const bar = document.querySelector('#progressBar');
             const audio = document.querySelector('#myAudio');
@@ -79,8 +88,7 @@ export default {
                 }
             document.querySelector('.playing').classList.remove('playing');
             nextSong.classList.add('playing');
-            document.querySelector('.tracksView').scroll(0,this.scroll);
-            this.scrollBy+=100;
+            document.querySelector('.tracksView').scrollBy(0,100);
             }
            }
         },
@@ -120,7 +128,12 @@ export default {
                 .catch(error => {
 
                 });
+            visualiser.startVisualizer();
 
+                    const out = document.querySelector('#out');
+                    const canvas = out.querySelector('canvas');
+                    canvas.style.transform="scale(0.8)";
+                    canvas.style.marginTop="-80px";
 
         },
 
@@ -207,6 +220,9 @@ export default {
     .playing{
         background: linear-gradient(90deg,rgba(128, 0, 128, 0.452),rgba(255, 166, 0, 0.445));
         cursor: default;
+        .actions{
+            display: none;
+        }
         .poster{
             img{
                 border-radius: 10px 0px 10px 0px;

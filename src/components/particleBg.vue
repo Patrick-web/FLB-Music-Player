@@ -1,15 +1,15 @@
 <template>
       <vue-particles
       :particleOpacity="0.5"
-      :particleSize="2"
-     :particlesNumber="300"
+      :particleSize="3"
+     :particlesNumber="50"
       color='#00FFB3'
       class="particle-js"
       :lineLinked="true"
         linesColor="#dedede"
         :linesWidth="1"
         :lineOpacity="0.2"
-        :linesDistance="120"
+        :linesDistance="200"
         :moveSpeed="5"
         :hoverEffect="false"
         :clickEffect="false"
