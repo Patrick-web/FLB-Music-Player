@@ -4,7 +4,7 @@
   <visualizer/>
 </div>
 <div class="controls-cont">
-  <audio id="myAudio"></audio>
+  <audio src='@/assets/song.mp3' id="myAudio"></audio>
   <div class="audioInfo">
     <p id="playingTitle" class="songTitle">Sittin' throwin Rocks</p>
     <!-- <p class="artist">Lexion Beats</p> -->
@@ -15,6 +15,7 @@
  
   <div class="controls">
     <div class="btn btn-favour">
+      <plAdder/>
       <br>
       <img src="@/assets/favourite.svg" alt="">
     </div>
@@ -34,11 +35,13 @@
 <script>
 import visualizer from '@/components/visualizer.vue'
 import playbackBt from '@/components/play-pauseBt.vue'
+import plAdder from '@/components/playListAdder.vue'
 const sampleFile = require('@/assets/audio/lost-it-to-trying.mp3')
 export default {
   components:{
     playbackBt,
-    visualizer
+    visualizer,
+    plAdder
   },
   data(){return{
     song:sampleFile,
@@ -60,6 +63,7 @@ export default {
         console.log("pausing");
         const audio = document.querySelector('#myAudio');
         audio.pause();
+        window.isPlaying = true
         console.clear()
         console.log('Duration' + audio.duration);
         console.log('currentTime' + audio.currentTime);
@@ -123,6 +127,7 @@ export default {
   .btn-repeat{
     margin-right: 25px;
     margin-top: 10px;
+    position: relative;
   }
   .btn-favour{
     margin-left: 25px;

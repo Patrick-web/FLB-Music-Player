@@ -20,11 +20,12 @@
     > -->
       <card
         :key='song.title'
-         v-for="(song,index) in songs"
+         v-for="(song) in songs"
         :path="song.path" 
         :poster="song.poster"
         :songTitle="song.title"
         :duration="song.duration"
+        :data="song"
       />
 
 
@@ -46,6 +47,7 @@
 const songSrc = require('@/assets/song.mp3')
 import card from '@/components/card.vue'
 import navigation from '@/components/nav.vue'
+import * as electron from 'electron';
 
 export default {
   data(){return{
@@ -61,14 +63,39 @@ export default {
   methods: {
 
     renderSongs(songs){
-        songs.forEach(song => {
-            this.songs.push(song);
-        })
+      const withDuplicates = [...this.songs,...songs];
+      console.log(withDuplicates.length);
+      const pureSongs = withDuplicates.reduce((acc, current) => {
+      const x = acc.find(item => item.path === current.path);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+      console.log(pureSongs.length);
+      this.songs = pureSongs
         document.body.classList.remove('loadingNow');
         document.querySelector('#loadingImg').classList.remove('jello');
 
-      console.log("rendering songs");
+      this.saveToJson(pureSongs)
+      console.log("songs rendered");
+    },
+    saveToJson(songs){
+      const json = JSON.stringify(songs);
+      const isSaved = electron.ipcRenderer.sendSync("savePlaylist", json);
+      console.log(isSaved);
+      // console.log(json);
+      // let data = electron.ipcRenderer.sendSync("savePlaylist", folder);
+
     }
+  },
+  mounted(){
+    setTimeout(()=>{
+      const songsData = electron.ipcRenderer.sendSync("getSongs");
+      let prevSongs = JSON.parse(songsData);
+      this.renderSongs(prevSongs);
+    },500)
   }
 }
 </script>

@@ -5,7 +5,7 @@
   <div style="width:300px" id="waveform"></div>
   <div class="grid">
 <!-- Settings -->
-    <div></div>
+    <div style="position:relative;margin-left:80px"><playlist/></div>
     <player/>
     <tracks/>
   </div>
@@ -16,6 +16,7 @@
 
 </template>
 <script>
+import playlist from './components/playlists.vue'
 import bg from '@/components/particleBg.vue'
 import tracks from '@/views/tracks.vue'
 import start from '@/views/start.vue'
@@ -78,7 +79,8 @@ export default {
     player,
     start,
     sideNav,
-    loading
+    loading,
+    playlist
   }
 }
 </script>

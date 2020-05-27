@@ -3,6 +3,7 @@
       <p style="display:none" class="songPath">{{path}}</p>
       <p style="display:none" class="posterPath">{{poster}}</p>
       <p style="display:none" class="songDuration">{{duration}}</p>
+      <p style="display:none" class="songIndex">{{data}}</p>
         <div class="poster">
         <img :src="poster" alt="">   
         </div>
@@ -13,7 +14,7 @@
           <div id="waveform"></div>
           <!-- <div class="songDuration">{{duration}}</div> -->
           <div class="actions">
-              <button class="sword addToQueue">Play Next</button>
+              <button @click.stop='playNext($event)' class="sword addToQueue">Play Next</button>
               <button class="sword playNext">Remove</button>
           </div>
       </div>
@@ -30,6 +31,9 @@ export default {
         }
     },
     methods:{
+        mustPlayNext(e){
+            console.log(e);
+        },
         createWav(target){
             var wavesurfer = WaveSurfer.create({
                 container: '#waveform',
@@ -66,6 +70,7 @@ export default {
             if(audio.loop === false){
                 audio.src = 'file://' +  nextSongPath;
                 console.log(audio.src);
+                audio.load();
                 const playPromise = audio.play();
                 playPromise.then(_ => {}).catch(error => {console.log(error);});
 
@@ -89,6 +94,8 @@ export default {
             document.querySelector('.playing').classList.remove('playing');
             nextSong.classList.add('playing');
             document.querySelector('.tracksView').scrollBy(0,100);
+            window.currentSong = nextSongPath;
+            window.isPlaying = true
             }
            }
         },
@@ -104,8 +111,15 @@ export default {
             const posterSrc = card.querySelector('.posterPath').textContent;
             const songName = card.querySelector('.songTitle').textContent;
             const songDuration = card.querySelector('.songDuration').textContent;
+            window.currentSong = {
+                songName,
+                songSrc,
+                posterSrc,
+                songDuration
+            }
             const audio = document.querySelector('#myAudio');
             audio.src = songSrc;
+            audio.load()
             document.querySelector('#songPoster').src = posterSrc;
             document.querySelector('#playingTitle').textContent = songName;
             if(songDuration == false){
@@ -129,11 +143,12 @@ export default {
 
                 });
             visualiser.startVisualizer();
+            const out = document.querySelector('#out');
+            const canvas = out.querySelector('canvas');
+            canvas.style.transform="scale(0.8)";
+            canvas.style.marginTop="-80px";
 
-                    const out = document.querySelector('#out');
-                    const canvas = out.querySelector('canvas');
-                    canvas.style.transform="scale(0.8)";
-                    canvas.style.marginTop="-80px";
+            window.isPlaying = true
 
         },
 
@@ -150,7 +165,8 @@ export default {
         songTitle:String,
         path:String,
         poster:String,
-        duration:Number
+        duration:Number,
+        data:Object
     }
 }
 </script>

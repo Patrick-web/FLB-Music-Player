@@ -1,5 +1,4 @@
 <template>
-
   <div id="content">
     <div id="out"></div>
   </div>
