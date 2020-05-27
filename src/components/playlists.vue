@@ -3,17 +3,23 @@
         <playform/>
         <!-- <editform/> -->
       <div id="title">Playlists</div>
-      <div :key='playList.id' v-for="playList in playLists" class="playList">
+      <div :key='playlist.id' v-for="(playlist,index) in playlists" class="playList">
         <div class="playlist-name">
-            <p class="pl-name">{{playList.name}}</p>
+            <div class="pl-name">
+               <p>{{playlist.name}}</p>
+                <div class="playListBt" @click="loadlist(index)">
+                    <img src="@/assets/triangle.svg" alt="">
+                </div>
+
+            </div>
             <div class="options">
-                <!-- <img src="@/assets/playBtFull.png" id="playList" alt=""> -->
+                <!-- <img src="@/assets/playListBtFull.png" id="playList" alt=""> -->
                 <img src="@/assets/pen.png" @click="pinSongs($event)" alt="">
                 <img src="@/assets/trash.png" alt="">
             </div>
         </div>
           <div class="playlist-Songs">
-              <div :key='song.title' v-for="song in playList.songs" class="songName">{{song.title}}</div>
+              <div :key='song.songName' v-for="song in playlist.songs" class="songName">{{song.title}}</div>
           </div>
       </div>
   </div>
@@ -22,28 +28,18 @@
 <script>
 import playform from '@/components/playlistForm.vue'
 import editform from '@/components/editPlaylist.vue'
+import {mapGetters,mapActions} from 'vuex';
 export default {
     components:{
         playform,
         editform
     },
-        data(){
-            return{
-            playLists:[
-                {
-                    name:'Podcasts',
-                    id:Date.now(),
-                    songs:[
-                        {
-                            title:'Syntax show 200',
-                            sourcepath:'pathTofile',
-                            poster:'pathToPoster'
-                        }
-                    ]
-                }
-            ]
-        }},
+    computed:mapGetters(['playlists']),
     methods:{
+        ...mapActions(['loadPlaylist']),
+        loadlist(playlistIndex){
+            this.loadPlaylist(playlistIndex);
+        },
         pinSongs(e){
             if(document.querySelector('.fixThePlaylist')){
                 document.querySelector('.fixThePlaylist').classList.remove('fixThePlaylist');
@@ -100,10 +96,16 @@ export default {
         border: 2px solid white;
         padding: 5px;
         padding-left: 10px;
-        border-radius: 30px;
-        background: rgba(255, 255, 255, 0);
-        transition: ease-in-out;
+        border-radius: 30px 0px 30px 30px;
+        background: none;
+        transition: 0.1s ;
+        position: relative;
+        z-index: 6;
         .options{
+            position: absolute;
+            bottom: 0%;
+            left:5px;
+            transform: translateY(65%);
             display: none;
             // display: flex;
             // margin-top: -20px;
@@ -127,12 +129,12 @@ export default {
         // background: rgba(255, 255, 255, 0.534);
         // color: rgba(2, 45, 65, 0.863);
         cursor: pointer;
-        font-weight: 600;    
-        border-radius: 5px;
+        font-weight: 600;
+        border-color: orangered;    
     }
     .playlist-Songs{
         width:400px ;
-        background: rgba(1, 182, 206, 0.151);
+        background: rgb(20, 20, 20);
         position: absolute;
         top:0;
         right: 0;
@@ -140,8 +142,10 @@ export default {
         transform: translateX(0%) scale(0);
         opacity: 0;
         transition: 0.3s ease-in-out;
+        max-height: 500px;
+        overflow-y: scroll;
         .songName{
-        border-bottom: 2px solid rgba(15, 99, 124, 0.562);
+        border-bottom: 2px solid rgba(95, 95, 95, 0.562);
         padding: 5px;
         padding-left: 10px;
         margin: 5px;
@@ -151,6 +155,7 @@ export default {
     }
 }
 .playList:hover{
+    margin-bottom: 30px;
     .playlist-Songs{
         opacity: 1;
         transform: translateX(110%) scale(1);
@@ -168,6 +173,35 @@ export default {
     }
     .options{
         display: none;
+    }
+}
+.pl-name{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    .playListBt{
+        transform: translateX(100%);
+        background: rgb(255, 255, 255);
+        border-radius: 20px;
+        padding: 8px;
+        position: absolute;
+        right: 0%;
+        top:50%;
+        width: 20px;
+        height: 20px;
+        transform: translate(100%,-60%);
+        img{
+            position: absolute;
+            top:50%;
+            left:60%;
+            transform: translate(-50%,-50%);
+            width: 20px;
+        }
+    }
+    .playListBt:hover{
+        filter: invert(100%);
+        border:2px solid rgb(0, 183, 255);
     }
 }
 

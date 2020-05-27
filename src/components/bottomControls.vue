@@ -17,7 +17,7 @@
     <div class="btn btn-favour">
       <plAdder/>
       <br>
-      <img src="@/assets/favourite.svg" alt="">
+      <img @click="showListAdder" src="@/assets/favourite.svg" alt="">
     </div>
     <div @click="pauseOrPlay" class="btn btn-play">
       <playbackBt/>
@@ -48,6 +48,9 @@ export default {
     songLength:100
   }},
   methods:{
+    showListAdder(){
+      document.body.classList.toggle('showListAdder')
+    },
     loop(){
       document.querySelector('.btn-repeat').classList.toggle('loop')
       document.querySelector('#myAudio').loop = !document.querySelector('#myAudio').loop;

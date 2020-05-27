@@ -38,7 +38,6 @@ export default {
   mounted(){
 
     window.addEventListener('keydown',(e)=>{
-      console.log(e);
       if(e.code==='Space'){
         e.preventDefault();
         if(document.body.classList.contains('playingSong')){

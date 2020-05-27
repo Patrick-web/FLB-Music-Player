@@ -3,7 +3,6 @@
       <p style="display:none" class="songPath">{{path}}</p>
       <p style="display:none" class="posterPath">{{poster}}</p>
       <p style="display:none" class="songDuration">{{duration}}</p>
-      <p style="display:none" class="songIndex">{{data}}</p>
         <div class="poster">
         <img :src="poster" alt="">   
         </div>
@@ -11,7 +10,6 @@
           <div class="songTitle">
               {{songTitle}} 
           </div>
-          <div id="waveform"></div>
           <!-- <div class="songDuration">{{duration}}</div> -->
           <div class="actions">
               <button @click.stop='playNext($event)' class="sword addToQueue">Play Next</button>
@@ -94,7 +92,12 @@ export default {
             document.querySelector('.playing').classList.remove('playing');
             nextSong.classList.add('playing');
             document.querySelector('.tracksView').scrollBy(0,100);
-            window.currentSong = nextSongPath;
+            window.currentSong = {
+                title:songName,
+                path:nextSongPath,
+                poster:posterSrc,
+                duration:parseInt(songDuration)
+            }
             window.isPlaying = true
             }
            }
@@ -112,10 +115,10 @@ export default {
             const songName = card.querySelector('.songTitle').textContent;
             const songDuration = card.querySelector('.songDuration').textContent;
             window.currentSong = {
-                songName,
-                songSrc,
-                posterSrc,
-                songDuration
+                title:songName,
+                path:card.querySelector('.songPath').textContent,
+                poster:posterSrc,
+                duration:parseInt(songDuration)
             }
             const audio = document.querySelector('#myAudio');
             audio.src = songSrc;

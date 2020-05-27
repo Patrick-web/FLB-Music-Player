@@ -3,7 +3,7 @@
 
     <navigation v-on:renderSongs="renderSongs"/>
 
-    <transition-group style="display:flex;flex-direction:column;align-items:flex-end"  name="slideIn" enter-active-class="animated fadeInRight" leave-active-class="animated hinge">
+    <transition-group style="display:flex;flex-direction:column;align-items:flex-end"  name="slideIn" enter-active-class="animated fadeInRight" leave-active-class="animated fadeOutLeft">
       <!-- <kinesis-container
       class="parent"
       :audio="audioFile"
@@ -20,12 +20,11 @@
     > -->
       <card
         :key='song.title'
-         v-for="(song) in songs"
+         v-for="(song) in songQueue"
         :path="song.path" 
         :poster="song.poster"
         :songTitle="song.title"
         :duration="song.duration"
-        :data="song"
       />
 
 
@@ -44,6 +43,7 @@
 </template>
 
 <script>
+import {mapGetters,mapActions} from 'vuex';
 const songSrc = require('@/assets/song.mp3')
 import card from '@/components/card.vue'
 import navigation from '@/components/nav.vue'
@@ -55,15 +55,16 @@ export default {
     isPlaying: false,
     songs:[]
   }},
+  computed:mapGetters(['songQueue']),
   components:{
     card,
     navigation
-
   },
   methods: {
+    ...mapActions(['addSongsFromFolder']),
 
     renderSongs(songs){
-      const withDuplicates = [...this.songs,...songs];
+      const withDuplicates = [...this.songQueue,...songs];
       console.log(withDuplicates.length);
       const pureSongs = withDuplicates.reduce((acc, current) => {
       const x = acc.find(item => item.path === current.path);
@@ -74,11 +75,12 @@ export default {
         }
       }, []);
       console.log(pureSongs.length);
-      this.songs = pureSongs
+      this.addSongsFromFolder(pureSongs);
+      // this.songQueue = pureSongs
         document.body.classList.remove('loadingNow');
         document.querySelector('#loadingImg').classList.remove('jello');
 
-      this.saveToJson(pureSongs)
+      this.saveToJson(pureSongs);
       console.log("songs rendered");
     },
     saveToJson(songs){

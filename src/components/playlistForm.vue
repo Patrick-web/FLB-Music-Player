@@ -7,13 +7,20 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 export default {
     methods:{
+        ...mapActions(['addNewPlaylist']),
         createAndAdd(){
-            const newPlaylist  = document.querySelector('#newPlaylist').value;
+            const newPlaylistName  = document.querySelector('#newPlaylist').value;
             const songToAdd = window.currentSong;
-            const data = [newPlaylist,songToAdd]
-            this.$emit('createPlaylist',data);
+            const newPlaylist = {
+            name:newPlaylistName,
+            id:Date.now(),
+            songs:[songToAdd]
+            }
+            this.addNewPlaylist(newPlaylist);
+            document.body.classList.remove('showPlaylistAdder');
         }
     }
 }
