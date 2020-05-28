@@ -3,6 +3,8 @@
       <p style="display:none" class="songPath">{{path}}</p>
       <p style="display:none" class="posterPath">{{poster}}</p>
       <p style="display:none" class="songDuration">{{duration}}</p>
+      <p style="display:none" class="songID">{{id}}</p>
+      <p style="display:none" class="songIndex">{{index}}</p>
         <div class="poster">
         <img :src="poster" alt="">   
         </div>
@@ -12,8 +14,8 @@
           </div>
           <!-- <div class="songDuration">{{duration}}</div> -->
           <div class="actions">
-              <button @click.stop='playNext($event)' class="sword addToQueue">Play Next</button>
-              <button class="sword playNext">Remove</button>
+              <button @click.stop='mustPlayNext($event)' class="sword addToQueue">Play Next</button>
+              <button @click.stop='removeFromQueue($event)' class="sword playNext">Remove</button>
           </div>
       </div>
   </div>
@@ -21,6 +23,7 @@
 
 <script>
 import * as visualiser from '@/assets/visualise.js'
+import {mapActions} from 'vuex';
 
 export default {
     data(){
@@ -29,8 +32,26 @@ export default {
         }
     },
     methods:{
+        ...mapActions(['removeSongFromQueue']),
         mustPlayNext(e){
-            console.log(e);
+            console.log(e.target);
+            const nextNode = e.currentTarget.parentElement.parentElement.parentElement;
+            nextNode.querySelector('.addToQueue').textContent = 'Playing Next'
+            const currentNode = document.querySelector('.playing');
+            currentNode.nextSibling.classList.add('toResumedFrom');
+            nextNode.classList.add('toPlayNext');
+            const nextInfo = {
+                nextNode,
+                currentNode
+            }
+            window.nextOveride = nextInfo;
+            window.hasResumed = false;
+        },
+        removeFromQueue(e){
+            console.log(e.currentTarget);
+            const index = parseInt(e.currentTarget.parentElement.parentElement.parentElement.querySelector('.songIndex').textContent);
+            console.log(index);
+            this.removeSongFromQueue(index)
         },
         createWav(target){
             var wavesurfer = WaveSurfer.create({
@@ -53,15 +74,38 @@ export default {
                 const audio = document.querySelector('#myAudio');
                 bar.value = audio.currentTime;
                 if(audio.currentTime === audio.duration){
-                    this.playNext(audio)
+                    if(window.hasResumed == false){
+                        this.playNext(true);
+                        console.log("Resuming from last stop");
+                    }else{
+                        this.playNext(false);
+                        console.log("Continuing normal behavoir");
+                    }
                 }
                 // console.log(bar.value);
                 // console.log(audio.currentTime);
 
             }, 700);
         },
-        playNext(audio){
-            const nextSong = document.querySelector('.playing').nextSibling;
+        playNext(continueNode){
+            const audio = document.querySelector('#myAudio');
+            let scrollAmount;
+            let nextSong;
+            if(window.nextOveride){
+                scrollAmount = 0;
+                nextSong = document.querySelector('.toPlayNext');
+                const toPlayNext = document.querySelector('.toPlayNext')
+                toPlayNext.querySelector('.addToQueue').textContent = 'Play Next'
+                toPlayNext.classList.remove('toPlayNext');
+                window.nextOveride = false;
+            }else if(continueNode){
+                scrollAmount = 0;
+                nextSong = document.querySelector('.toResumedFrom');
+                window.hasResumed == true
+            }
+            else{
+                nextSong = document.querySelector('.playing').nextSibling;
+            }
            if(nextSong){
            const nextSongPath = nextSong.querySelector('.songPath').textContent;
             console.log(audio.loop);
@@ -74,6 +118,7 @@ export default {
 
                 const posterSrc = nextSong.querySelector('.posterPath').textContent;
                 const songName = nextSong.querySelector('.songTitle').textContent;
+                const songID = nextSong.querySelector('.songID').textContent;
                 const songDuration = nextSong.querySelector('.songDuration').textContent;
                 document.querySelector('#songPoster').src = posterSrc;
                 document.querySelector('#playingTitle').textContent = songName;
@@ -93,6 +138,7 @@ export default {
             nextSong.classList.add('playing');
             document.querySelector('.tracksView').scrollBy(0,100);
             window.currentSong = {
+                id:songID,
                 title:songName,
                 path:nextSongPath,
                 poster:posterSrc,
@@ -113,8 +159,10 @@ export default {
             const songSrc = 'file://' + card.querySelector('.songPath').textContent;
             const posterSrc = card.querySelector('.posterPath').textContent;
             const songName = card.querySelector('.songTitle').textContent;
+            const songID = card.querySelector('.songID').textContent;
             const songDuration = card.querySelector('.songDuration').textContent;
             window.currentSong = {
+                id:songID,
                 title:songName,
                 path:card.querySelector('.songPath').textContent,
                 poster:posterSrc,
@@ -169,12 +217,21 @@ export default {
         path:String,
         poster:String,
         duration:Number,
-        data:Object
+        data:Object,
+        id:String,
+        index:Number
     }
 }
 </script>
 
 <style lang="scss">
+.toPlayNext{
+    .addToQueue{
+        border-radius: 5px;
+        background: fuchsia !important;
+        font-weight: 600;
+    }
+}
     .k-card{
         display: flex;
         justify-content: flex-end;

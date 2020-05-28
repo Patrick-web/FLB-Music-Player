@@ -7,8 +7,11 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions,mapGetters } from 'vuex';
+import * as electron from 'electron';
+
 export default {
+    computed:mapGetters(['playlists']),
     methods:{
         ...mapActions(['addNewPlaylist']),
         createAndAdd(){
@@ -20,8 +23,13 @@ export default {
             songs:[songToAdd]
             }
             this.addNewPlaylist(newPlaylist);
+            // this.savePlaylistsToFS();
             document.body.classList.remove('showPlaylistAdder');
-        }
+        },
+        savePlaylistsToFS(){
+        const json = JSON.stringify(this.playlists);
+        electron.ipcRenderer.send("savePlaylists", json);
+    },
     }
 }
 </script>

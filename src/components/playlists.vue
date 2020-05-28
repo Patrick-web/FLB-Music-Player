@@ -1,7 +1,9 @@
 <template>
   <div class="playlistCont">
         <playform/>
-        <!-- <editform/> -->
+        <confirmBox v-on:confirmation="decide"/>
+
+        <editform :index="targetListIndex" :playlist="targetList"/>
       <div id="title">Playlists</div>
       <div :key='playlist.id' v-for="(playlist,index) in playlists" class="playList">
         <div class="playlist-name">
@@ -14,38 +16,75 @@
             </div>
             <div class="options">
                 <!-- <img src="@/assets/playListBtFull.png" id="playList" alt=""> -->
-                <img src="@/assets/pen.png" @click="pinSongs($event)" alt="">
-                <img src="@/assets/trash.png" alt="">
+                <img src="@/assets/pen.png" @click="showEditBox(playlist,index)" alt="">
+                <img src="@/assets/trash.png" @click="showConfirmBox(playlist.name,index)" alt="">
             </div>
         </div>
           <div class="playlist-Songs">
-              <div :key='song.songName' v-for="song in playlist.songs" class="songName">{{song.title}}</div>
+              <div :key='song.id' v-for="song in playlist.songs" class="songName">{{song.title}}</div>
           </div>
       </div>
   </div>
 </template>
 
 <script>
+import * as electron from 'electron';
 import playform from '@/components/playlistForm.vue'
 import editform from '@/components/editPlaylist.vue'
+import confirmBox from '@/components/confirmBox.vue'
+
 import {mapGetters,mapActions} from 'vuex';
 export default {
     components:{
         playform,
-        editform
+        editform,
+        confirmBox
+
+    },
+    data(){
+        return{
+            targetListIndex:null,
+            targetList:{
+                name:'sampple list name',
+                songs:[{title:'sample song'}]
+            }
+        }
     },
     computed:mapGetters(['playlists']),
     methods:{
-        ...mapActions(['loadPlaylist']),
+        ...mapActions(['renderPlaylist','loadPlaylistsFromFS','deletePlaylist']),
         loadlist(playlistIndex){
-            this.loadPlaylist(playlistIndex);
+            this.renderPlaylist(playlistIndex);
+            document.body.classList.add('showingPlaylist');
         },
-        pinSongs(e){
-            if(document.querySelector('.fixThePlaylist')){
-                document.querySelector('.fixThePlaylist').classList.remove('fixThePlaylist');
+        showEditBox(playlist,index){
+            console.log(index);
+            console.log(playlist);
+            this.targetList = playlist;
+            this.targetListIndex = index
+            document.body.classList.add('showEditForm')
+        },
+        showConfirmBox(name,index){
+            this.targetListIndex = index
+            document.body.classList.add('showConfirmer');
+        },
+        decide(decision){
+            console.log(decision);
+            if(decision === 'Yes'){
+                this.deletePlaylist(this.targetListIndex);
             }
-            const playList = e.target.parentElement.parentElement.parentElement
-            playList.classList.add('fixThePlaylist')
+        }
+    },
+    mounted(){
+        const playlistData = electron.ipcRenderer.sendSync("getPlaylists");
+        const playlists =  JSON.parse(playlistData);
+        // console.log(playlists);
+        if(playlistData == null){
+            console.log("no playlists");
+        }else if(playlists.length<1){
+            console.log("no playlist in file");
+        }else{
+            this.loadPlaylistsFromFS(playlists);
         }
     }
 }

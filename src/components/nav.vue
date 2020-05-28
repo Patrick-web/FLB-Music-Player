@@ -17,13 +17,18 @@
 </template>
 
 <script>
+import { uuid } from 'uuidv4'
 import * as electron from 'electron';
+import {mapActions} from 'vuex';
 
 export default {
     data(){return{
         songs:[]
     }},
     methods:{
+        ...mapActions(['persistFolderSongs']),
+        ...mapActions(['renderSongsFromFolder']),
+
         pickMusic(folder) {
             document.body.classList.add('loadingNow');
             document.querySelector('#loadingImg').classList.add('jello');
@@ -51,14 +56,27 @@ export default {
                     duration = Math.floor(item.tags.format.duration);
                 }
                 const song = {
+                    id:uuid(),
                     title:item.name,
                     poster:this.setPoster(poster),
                     path: item.location,
                     duration:duration
                 }
+                console.log(song.id);
                 songs.push(song);
             })
-            this.$emit('renderSongs',songs);
+            this.persistFolderSongs(songs);
+            this.renderSongsFromFolder();
+            document.body.classList.remove('loadingNow');
+            document.querySelector('#loadingImg').classList.remove('jello');
+
+            // this.$emit('renderSongsFromFolder',songs);
+            this.saveFolderSongsToJson(songs);
+        },
+        saveFolderSongsToJson(songs){
+            const json = JSON.stringify(songs);
+            const isSaved = electron.ipcRenderer.sendSync("saveAddedSongs", json);
+            console.log(isSaved);
         },
         setPoster(arg){
             if(arg === false){

@@ -167,19 +167,36 @@ async function parseFile(file, scanDir) {
 	}
 }
 
-ipcMain.on('savePlaylist',(event,json)=>{
-	const currentdir = process.cwd();
+ipcMain.on('saveAddedSongs',(event,json)=>{
 	const fileName ='flb_songs.json'
 	const content = json;
 	const userData = app.getPath('userData');
 	fs.writeFileSync(path.join(userData, fileName), content);
 	event.returnValue = true;
 })
+ipcMain.on('savePlaylists',(event,json)=>{
+	const fileName ='flb_playlists.json'
+	const content = json;
+	const userData = app.getPath('userData');
+	fs.writeFileSync(path.join(userData, fileName), content);
+	// event.returnValue = true;
+})
 
 ipcMain.on("getSongs", (event) => {
 	const userData = app.getPath('userData');
 	const pth = path.join(userData, 'flb_songs.json');
+	console.log(pth);
+	if (fs.existsSync(pth)) {
+		event.returnValue = fs.readFileSync(pth, "utf8");
+	}else{
+		event.returnValue = null;
+	}
+});
 
+ipcMain.on("getPlaylists", (event) => {
+	const userData = app.getPath('userData');
+	const pth = path.join(userData, 'flb_playlists.json');
+	console.log(pth);
 	if (fs.existsSync(pth)) {
 		event.returnValue = fs.readFileSync(pth, "utf8");
 	}else{

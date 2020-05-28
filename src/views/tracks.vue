@@ -1,7 +1,10 @@
 <template>
   <div class="tracksView">
-
-    <navigation v-on:renderSongs="renderSongs"/>
+    <div class="actions">
+      <p id="playingType">Added</p>
+      <img id="backToAdded" @click="backToAddedSongs" src="@/assets/arrow.svg" alt="">
+    </div>
+    <navigation/>
 
     <transition-group style="display:flex;flex-direction:column;align-items:flex-end"  name="slideIn" enter-active-class="animated fadeInRight" leave-active-class="animated fadeOutLeft">
       <!-- <kinesis-container
@@ -20,11 +23,13 @@
     > -->
       <card
         :key='song.title'
-         v-for="(song) in songQueue"
+         v-for="(song,index) in songQueue"
         :path="song.path" 
         :poster="song.poster"
         :songTitle="song.title"
         :duration="song.duration"
+        :id="song.id"
+        :index="index"
       />
 
 
@@ -61,48 +66,36 @@ export default {
     navigation
   },
   methods: {
-    ...mapActions(['addSongsFromFolder']),
+    ...mapActions(['renderSongsFromFolder']),
+    ...mapActions(['persistPreviouslyLoadedSongs']),
+    ...mapActions(['renderPreviouslyLoaded']),
 
-    renderSongs(songs){
-      const withDuplicates = [...this.songQueue,...songs];
-      console.log(withDuplicates.length);
-      const pureSongs = withDuplicates.reduce((acc, current) => {
-      const x = acc.find(item => item.path === current.path);
-        if (!x) {
-          return acc.concat([current]);
-        } else {
-          return acc;
-        }
-      }, []);
-      console.log(pureSongs.length);
-      this.addSongsFromFolder(pureSongs);
-      // this.songQueue = pureSongs
-        document.body.classList.remove('loadingNow');
-        document.querySelector('#loadingImg').classList.remove('jello');
-
-      this.saveToJson(pureSongs);
-      console.log("songs rendered");
+    backToAddedSongs(){
+        document.body.classList.remove('showingPlaylist');
+        this.renderSongsFromFolder();
+        document.querySelector('#playingType').textContent = 'Added'
+        console.log(this.songQueue);
     },
-    saveToJson(songs){
-      const json = JSON.stringify(songs);
-      const isSaved = electron.ipcRenderer.sendSync("savePlaylist", json);
-      console.log(isSaved);
-      // console.log(json);
-      // let data = electron.ipcRenderer.sendSync("savePlaylist", folder);
-
-    }
   },
   mounted(){
     setTimeout(()=>{
       const songsData = electron.ipcRenderer.sendSync("getSongs");
       let prevSongs = JSON.parse(songsData);
-      this.renderSongs(prevSongs);
+      if(prevSongs != null){
+        this.persistPreviouslyLoadedSongs(prevSongs);
+        this.renderPreviouslyLoaded(prevSongs);
+      }
     },500)
   }
 }
 </script>
 
-<style>
+<style lang='scss'>
+.showingPlaylist{
+    #backToAdded{
+      transform: scale(1) !important;
+    }
+}
 .tracksView{
   display: flex;
   align-items: flex-end;
@@ -113,6 +106,31 @@ export default {
   overflow: scroll;
   padding-bottom: 50px;
   scroll-behavior: smooth;
+  span{
+    width: 100%;
+  }
+  .actions{
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 10px;
+    align-items: center;
+    width: 100%;
+    position:sticky;
+    font-size: 1.8em;
+    font-weight: 900;
+    #backToAdded{
+      margin-right: -100px;
+      margin-left: -80px;
+      width: 40px;
+      transform: scale(0);
+      transition: 0.1s cubic-bezier(0.075, 0.82, 0.165, 1);
+    }
+    #backToAdded:hover{
+      cursor: pointer;
+      filter:sepia(100%);
+      transform: scale(1.1);
+    }
+  }
 }
 
 

@@ -24,7 +24,6 @@ import sideNav from '@/components/sideNav.vue'
 import player from '@/components/bottomControls.vue'
 import loading from '@/components/loading.vue'
 const songSrc = require('./assets/Syntax200.mp3')
-import * as WaveSurfer from "@/assets/Js/wavesurfer.js"
 import "@/assets/howler.js"
 
 import 'module';
@@ -79,7 +78,7 @@ export default {
     start,
     sideNav,
     loading,
-    playlist
+    playlist,
   }
 }
 </script>
