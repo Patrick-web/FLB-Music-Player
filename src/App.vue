@@ -35,23 +35,27 @@ export default {
     }
   },
   mounted(){
-
+    document.body.classList.add('hideControls');
     window.addEventListener('keydown',(e)=>{
       if(e.code==='Space'){
-        e.preventDefault();
-        if(document.body.classList.contains('playingSong')){
-          document.body.classList.remove('playingSong');
-          document.querySelector('#myAudio').pause();
+        if(e.srcElement.classList.contains('inputElem')){
+          console.log("normal behaviour");
         }else{
-          document.body.classList.add('playingSong')
-          document.querySelector('#myAudio').play();
+          e.preventDefault();
+          if(document.body.classList.contains('playingSong')){
+            document.body.classList.remove('playingSong');
+            document.querySelector('#myAudio').pause();
+          }else{
+            document.body.classList.add('playingSong')
+            document.querySelector('#myAudio').play();
+          }//
+          const audio = document.querySelector('#myAudio');
+          if(e.code ==='ArrowLeft'){
+              audio.currentTime -=5;
+            }else if(e.code ==='ArrowRight'){
+            audio.currentTime +=5;
+          }
         }
-      }
-      const audio = document.querySelector('#myAudio');
-      if(e.code ==='ArrowLeft'){
-          audio.currentTime -=5;
-        }else if(e.code ==='ArrowRight'){
-        audio.currentTime +=5;
       }
       })
   

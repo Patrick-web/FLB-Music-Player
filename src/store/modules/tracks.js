@@ -7,20 +7,39 @@ const state = {
     songQueue:[
 
     ],
-    addedSongs:[]
+    addedSongs:[
+
+    ],
+    recents:[
+
+    ]
 };
 
 const getters = {
     playlists: (state)=>state.playlists,
-    songQueue: (state)=>state.songQueue
+    songQueue: (state)=>state.songQueue,
+    recents: (state)=>state.recents
 };
 
 const actions = {
+    addToRecents({commit},index){
+        commit('addToRecents',index);
+
+    },
+    loadRecents({commit},songs){
+        commit('loadRecents',songs);
+    },
+    renderRecents({commit}){
+        document.body.classList.add('showingBackBt');
+        document.querySelector('#playingType').style.marginLeft = '-50px'
+        document.querySelector('#playingType').textContent = 'Recently Played'
+        commit('renderRecents');
+    },
     removeSongFromQueue({commit},index){
         commit('removeSongFromQueue',index)
     },
     persistFolderSongs({commit},songs){
-        commit('persistFolderSongs',unduplicate(songs))
+        commit('persistFolderSongs',unduplicate(songs,state.addedSongs))
     },
     renderSongsFromFolder({commit}){
         commit('renderSongsFromFolder');
@@ -55,11 +74,22 @@ const actions = {
         commit('persistPreviouslyLoadedSongs',songs)
     },
     renderPreviouslyLoaded({commit},songs){
-        commit('renderPreviouslyLoaded',songs)
+        commit('renderPreviouslyLoaded',unduplicate(songs,state.addedSongs));
+        // const rendered = document.querySelectorAll('.card');
+        // rendered[0].querySelector('.a')
     }
 };
 
 const mutations = {
+    addToRecents:(state,index)=>{
+        state.recents.push(state.songQueue[index]);
+        state.recents = unduplicate(state.recents);
+    },
+
+    loadRecents:(state,songs)=>state.recents = songs,
+
+    renderRecents:(state)=>state.songQueue = unduplicate(state.recents),
+
     removeSongFromQueue:(state,index)=>state.songQueue.splice(index,1),
 
     renderPreviouslyLoaded:(state,songs)=>state.songQueue = songs,
@@ -72,12 +102,21 @@ const mutations = {
 
     addPlaylist: (state,newPlaylist) => state.playlists.unshift(newPlaylist),
 
-    addSongToPlaylist:(state,data) => state.playlists[data.playlistIndex].songs.push(data.song),
+    addSongToPlaylist:(state,data) => {
+        state.playlists[data.playlistIndex].songs.push(data.song);
+        state.playlists.forEach(list=>{
+            console.log(list.songs);
+            list.songs = unduplicate(list.songs)
+            console.log(list.songs);
+        })
+    },
 
-    renderPlaylist: (state,index) => state.songQueue = state.playlists[index].songs,
+    renderPlaylist: (state,index) => state.songQueue = unduplicate(state.playlists[index].songs),
 
-    loadPlaylistsFromFS:(state,playlists) => state.playlists = playlists,
+    loadPlaylistsFromFS:(state,playlists) =>{
+         state.playlists = playlists
 
+    },
     editPlaylist:(state,data) =>{
         const {plIndex,plName,sTargets} = data;
         state.playlists[plIndex].name = plName;
@@ -92,8 +131,15 @@ const mutations = {
 
     deletePlaylist:(state,index)=> state.playlists.splice(index,1)
 };
-function  unduplicate(array){
-    const withDuplicates = [...array,state.addedSongs];
+function  unduplicate(array1,array2){
+    let withDuplicates;
+    if(array2){
+        withDuplicates = [...array1,array2];
+        console.log("Two arrays passed");
+    }else{
+        console.log("One array passed");
+        withDuplicates = array1;
+    }
     const pureSongs = withDuplicates.reduce((acc, current) => {
     const x = acc.find(item => item.path === current.path);
       if (!x) {

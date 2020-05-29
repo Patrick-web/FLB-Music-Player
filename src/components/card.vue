@@ -22,8 +22,9 @@
 </template>
 
 <script>
+import * as electron from 'electron';
 import * as visualiser from '@/assets/visualise.js'
-import {mapActions} from 'vuex';
+import {mapActions,mapGetters} from 'vuex';
 
 export default {
     data(){
@@ -31,14 +32,22 @@ export default {
             scroll:100
         }
     },
+    computed:mapGetters(['recents']),
     methods:{
-        ...mapActions(['removeSongFromQueue']),
+        ...mapActions(['removeSongFromQueue','addToRecents']),
+        saveRecentSongs(){
+            const json = JSON.stringify(this.recents);
+            electron.ipcRenderer.send("saveRecentSongs", json);
+        },
         mustPlayNext(e){
             console.log(e.target);
             const nextNode = e.currentTarget.parentElement.parentElement.parentElement;
             nextNode.querySelector('.addToQueue').textContent = 'Playing Next'
             const currentNode = document.querySelector('.playing');
             currentNode.nextSibling.classList.add('toResumedFrom');
+            if(document.querySelector('.toPlayNext')){
+                document.querySelector('.toPlayNext').classList.remove('toPlayNext');
+            }
             nextNode.classList.add('toPlayNext');
             const nextInfo = {
                 nextNode,
@@ -52,13 +61,6 @@ export default {
             const index = parseInt(e.currentTarget.parentElement.parentElement.parentElement.querySelector('.songIndex').textContent);
             console.log(index);
             this.removeSongFromQueue(index)
-        },
-        createWav(target){
-            var wavesurfer = WaveSurfer.create({
-                container: '#waveform',
-                waveColor: 'violet',
-                progressColor: 'purple'
-            });
         },
         resetProgress(){
             const bar = document.querySelector('#progressBar');
@@ -122,6 +124,10 @@ export default {
                 const songDuration = nextSong.querySelector('.songDuration').textContent;
                 document.querySelector('#songPoster').src = posterSrc;
                 document.querySelector('#playingTitle').textContent = songName;
+                const songIndex = nextSong.querySelector('.songIndex').textContent;
+                
+                this.addToRecents(songIndex);
+                this.saveRecentSongs()
                 if(songDuration == false){
                     setTimeout(()=>{
                     document.querySelector('#progressBar').max = audio.duration;
@@ -149,6 +155,9 @@ export default {
            }
         },
         playSong(e){
+            if(document.body.classList.contains('hideControls')){
+                document.body.classList.remove('hideControls');
+            };
             const card = e.currentTarget;
             document.body.classList.add('playingSong');
             this.resetProgress()
@@ -161,6 +170,11 @@ export default {
             const songName = card.querySelector('.songTitle').textContent;
             const songID = card.querySelector('.songID').textContent;
             const songDuration = card.querySelector('.songDuration').textContent;
+            const songIndex = card.querySelector('.songIndex').textContent;
+            
+            this.addToRecents(songIndex);
+            this.saveRecentSongs();
+
             window.currentSong = {
                 id:songID,
                 title:songName,
@@ -271,6 +285,7 @@ export default {
                 color: white;  
             }
             .actions{
+                width: 100%;
                 button{
                     margin: 10px;
                     outline: none;
@@ -297,7 +312,7 @@ export default {
         background: linear-gradient(90deg,rgba(128, 0, 128, 0.452),rgba(255, 166, 0, 0.445));
         cursor: default;
         .actions{
-            display: none;
+            display: none !important;
         }
         .poster{
             img{

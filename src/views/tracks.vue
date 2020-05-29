@@ -1,6 +1,6 @@
 <template>
   <div class="tracksView">
-    <div class="actions">
+    <div class="tactions">
       <p id="playingType">Added</p>
       <img id="backToAdded" @click="backToAddedSongs" src="@/assets/arrow.svg" alt="">
     </div>
@@ -66,21 +66,23 @@ export default {
     navigation
   },
   methods: {
-    ...mapActions(['renderSongsFromFolder']),
-    ...mapActions(['persistPreviouslyLoadedSongs']),
-    ...mapActions(['renderPreviouslyLoaded']),
+    ...mapActions(['renderSongsFromFolder','persistPreviouslyLoadedSongs','renderPreviouslyLoaded','loadRecents']),
 
     backToAddedSongs(){
         document.body.classList.remove('showingPlaylist');
         this.renderSongsFromFolder();
         document.querySelector('#playingType').textContent = 'Added'
-        console.log(this.songQueue);
     },
   },
   mounted(){
     setTimeout(()=>{
       const songsData = electron.ipcRenderer.sendSync("getSongs");
-      let prevSongs = JSON.parse(songsData);
+      const recentsData = electron.ipcRenderer.sendSync("getRecents");
+      const recentSongs = JSON.parse(recentsData);
+      const prevSongs = JSON.parse(songsData);
+      if(recentSongs){
+        this.loadRecents(recentSongs);
+      }
       if(prevSongs != null){
         this.persistPreviouslyLoadedSongs(prevSongs);
         this.renderPreviouslyLoaded(prevSongs);
@@ -91,7 +93,7 @@ export default {
 </script>
 
 <style lang='scss'>
-.showingPlaylist{
+.showingBackBt{
     #backToAdded{
       transform: scale(1) !important;
     }
@@ -109,7 +111,7 @@ export default {
   span{
     width: 100%;
   }
-  .actions{
+  .tactions{
     display: flex;
     justify-content: space-evenly;
     padding-top: 10px;

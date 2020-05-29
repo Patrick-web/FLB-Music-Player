@@ -1,17 +1,17 @@
 <template>
   <div class="menu">
       <div class="menuShow"></div>
-      <div id="recent" class="icn">
+      <div @click="renderRecents" id="recent" class="icn">
           <img src="@/assets/clock.png" alt="">
-          <p class="exp">Recents</p>
+          <p  class="exp">Recents</p>
       </div>
-      <div id="fav" class="icn">
+      <div @click="showPlaylists" id="fav" class="icn">
           <img src="@/assets/favourite.svg" alt="">
           <p class="exp">Playlists</p>
       </div>
       <div v-on:click="pickMusic(true)" id='folder' class="icn">
           <img src="@/assets/folder.png" alt="">
-          <p class="exp">Add folder</p>
+          <p class="exp" style="width:150px">Add Music folder</p>
       </div>
   </div>
 </template>
@@ -26,9 +26,10 @@ export default {
         songs:[]
     }},
     methods:{
-        ...mapActions(['persistFolderSongs']),
-        ...mapActions(['renderSongsFromFolder']),
-
+        ...mapActions(['persistFolderSongs','renderSongsFromFolder','renderRecents']),
+        showPlaylists(){
+            document.body.classList.toggle('showPlaylistCont');
+        },
         pickMusic(folder) {
             document.body.classList.add('loadingNow');
             document.querySelector('#loadingImg').classList.add('jello');
@@ -62,11 +63,12 @@ export default {
                     path: item.location,
                     duration:duration
                 }
-                console.log(song.id);
                 songs.push(song);
             })
-            this.persistFolderSongs(songs);
-            this.renderSongsFromFolder();
+            if(songs.length>0){
+                this.persistFolderSongs(songs);
+                this.renderSongsFromFolder();
+            }
             document.body.classList.remove('loadingNow');
             document.querySelector('#loadingImg').classList.remove('jello');
 
@@ -147,6 +149,7 @@ export default {
         transition: 0.1s ease-in;
         width: 100px;
         padding-left: 10px;
+        pointer-events: none;
     }
 }
 .icn:hover{

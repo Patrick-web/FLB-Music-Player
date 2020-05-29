@@ -1,10 +1,17 @@
 <template>
-  <div class="playlistCont">
-        <playform/>
-        <confirmBox v-on:confirmation="decide"/>
+<div class="playlistWrapper">
 
-        <editform :index="targetListIndex" :playlist="targetList"/>
-      <div id="title">Playlists</div>
+        <playform style="position:fixed;z-index:5"/>
+        <confirmBox  style="position:fixed;z-index:5" v-on:confirmation="decide"/>
+
+        <editform  style="position:fixed;z-index:5" :index="targetListIndex" :playlist="targetList"/>
+  <div class="playlistCont">
+        <div id="title" style="position:relative">
+          Playlists
+            <div @click="hidePlaylists" id="hidePlaylists">
+             <img id="" src="@/assets/x.svg" alt="">
+            </div>
+        </div>
       <div :key='playlist.id' v-for="(playlist,index) in playlists" class="playList">
         <div class="playlist-name">
             <div class="pl-name">
@@ -25,6 +32,7 @@
           </div>
       </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -53,9 +61,12 @@ export default {
     computed:mapGetters(['playlists']),
     methods:{
         ...mapActions(['renderPlaylist','loadPlaylistsFromFS','deletePlaylist']),
+        hidePlaylists(){
+            document.body.classList.remove('showPlaylistCont');
+        },
         loadlist(playlistIndex){
             this.renderPlaylist(playlistIndex);
-            document.body.classList.add('showingPlaylist');
+            document.body.classList.add('showingBackBt');
         },
         showEditBox(playlist,index){
             console.log(index);
@@ -91,6 +102,22 @@ export default {
 </script>
 
 <style lang="scss">
+#hidePlaylists{
+    position: absolute;
+    z-index: 3;
+    right: -5px;
+    top:0px;
+    transform: translateX(100%);
+    background: rgba(255, 0, 0, 0.301);
+    padding: 5px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#hidePlaylists:hover{
+    cursor: pointer;
+}
 .playListEditBox{
     position: fixed;
     width: 500px;
@@ -107,16 +134,21 @@ export default {
         border:none;
     }
 }
-
+.showPlaylistCont{
+    .playlistCont{
+        top:10px;
+    }
+}
 
 .playlistCont{
     position: absolute;
     z-index: 4;
-    top:10px;
+    top:-810px;
     border-radius: 10px;
-    width: 100%;
+    width:150px;
     background: linear-gradient(150deg,rgba(20, 20, 20, 0.452),rgb(32, 32, 32));
     padding-bottom: 8px;
+    transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
     #title{
         background: white;
         color: rgba(0, 0, 0, 0.863);

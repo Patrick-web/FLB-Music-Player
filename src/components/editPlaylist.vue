@@ -1,7 +1,7 @@
 <template>
     <form class="form editForm">
       <label for="">Edit Playlist</label>
-      <input id="edPlName" :value="playlist.name" type="text">
+      <input id="edPlName"  class="inputElem" :value="playlist.name" type="text">
       <p id="edPlIndex" style="display:none">{{index}}</p>
       <button @click="saveEdit" id="editPlBT">Save</button>
       <button @click="hideForm" id="hide">Cancel</button>

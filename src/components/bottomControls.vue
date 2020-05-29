@@ -1,6 +1,6 @@
 <template>
 <div class="playerArea">
-<div class="visulizerArea">
+<div class="visulizerArea" style="z-index:-1">
   <visualizer/>
 </div>
 <div class="controls-cont">
@@ -92,6 +92,11 @@ export default {
 </script>
 
 <style scoped lang='scss'>
+.hideControls{
+  .controls-cont{
+    transform: scale(0);
+  }
+}
 .playerArea{
   position: relative;
   height: 100vh;
@@ -105,6 +110,8 @@ export default {
   margin-right: 10px;
 }
   .controls-cont{
+    transform: scale(1);
+    transition: 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     z-index: 4;
     width: 100%;
     bottom: 0;

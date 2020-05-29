@@ -1,8 +1,9 @@
 <template>
   <form class="form  playlistAdder">
-      <label for="">Enter playlist name</label>
-      <input id="newPlaylist" type="text">
-      <button @click="createAndAdd">Create & Add</button>
+        <label for="">Enter playlist name</label>
+        <input id="newPlaylist" class="inputElem" type="text">
+        <button @click="createAndAdd">Create & Add</button>
+        <button style="background: rgb(255, 0, 119);" @click="hideForm">Cancel</button>
   </form>
 </template>
 
@@ -14,6 +15,9 @@ export default {
     computed:mapGetters(['playlists']),
     methods:{
         ...mapActions(['addNewPlaylist']),
+        hideForm(){
+            document.body.classList.remove('showPlaylistAdder')
+        },
         createAndAdd(){
             const newPlaylistName  = document.querySelector('#newPlaylist').value;
             const songToAdd = window.currentSong;
