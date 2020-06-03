@@ -192,27 +192,23 @@ export default {
             audio.load()
             document.querySelector('#songPoster').src = posterSrc;
             document.querySelector('#playingTitle').textContent = songName;
-            if(songDuration == false){
-                setTimeout(()=>{
-                document.querySelector('#progressBar').max = audio.duration;
-                console.log("Duration not initially Set");
-                console.log(audio.duration);
-                console.log(document.querySelector('#progressBar').max);
 
-                },300)
-            }else{
-                document.querySelector('#progressBar').max = songDuration;
-                console.log("Duration initial value used");
-            }
             console.log(audio.play());
             const playPromise = audio.play();
                 playPromise.then(_ => {
-
+                    if(songDuration == false){
+                        document.querySelector('#progressBar').max = audio.duration;
+                    }else{
+                        document.querySelector('#progressBar').max = songDuration;
+                    }
                 })
                 .catch(error => {
 
                 });
             visualiser.startVisualizer();
+            console.log(songDuration);
+            
+
             const out = document.querySelector('#out');
             const canvas = out.querySelector('canvas');
             canvas.style.transform="scale(0.8)";

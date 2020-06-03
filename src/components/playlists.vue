@@ -66,7 +66,8 @@ export default {
         },
         loadlist(playlistIndex){
             this.renderPlaylist(playlistIndex);
-            document.body.classList.add('showingBackBt');
+            document.body.classList.toggle('showBackArrow');
+
         },
         showEditBox(playlist,index){
             console.log(index);
@@ -78,6 +79,7 @@ export default {
         showConfirmBox(name,index){
             this.targetListIndex = index
             document.body.classList.add('showConfirmer');
+            document.querySelector('#confirmText').textContent = `Delete the ${name} Playlist ?`
         },
         decide(decision){
             console.log(decision);

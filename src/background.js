@@ -34,7 +34,7 @@ function createWindow () {
     win.loadURL('app://./index.html')
   }
   win.maximize()
-  console.log(win);
+//   console.log(win);
   win.on('closed', () => {
     win = null
   })
@@ -193,7 +193,7 @@ ipcMain.on('saveRecentSongs',(event,json)=>{
 ipcMain.on("getSongs", (event) => {
 	const userData = app.getPath('userData');
 	const pth = path.join(userData, 'flb_songs.json');
-	console.log(pth);
+	// console.log(pth);
 	if (fs.existsSync(pth)) {
 		event.returnValue = fs.readFileSync(pth, "utf8");
 	}else{
@@ -204,7 +204,7 @@ ipcMain.on("getSongs", (event) => {
 ipcMain.on("getPlaylists", (event) => {
 	const userData = app.getPath('userData');
 	const pth = path.join(userData, 'flb_playlists.json');
-	console.log(pth);
+	// console.log(pth);
 	if (fs.existsSync(pth)) {
 		event.returnValue = fs.readFileSync(pth, "utf8");
 	}else{
@@ -215,7 +215,7 @@ ipcMain.on("getPlaylists", (event) => {
 ipcMain.on("getRecents", (event) => {
 	const userData = app.getPath('userData');
 	const pth = path.join(userData, 'flb_recents.json');
-	console.log(pth);
+	// console.log(pth);
 	if (fs.existsSync(pth)) {
 		event.returnValue = fs.readFileSync(pth, "utf8");
 	}else{

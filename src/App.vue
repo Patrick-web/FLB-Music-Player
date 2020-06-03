@@ -3,7 +3,6 @@
   <img class="animated faster" src="@/assets/splash.svg" id="splash" alt="">
   <img src="@/assets/logo.svg" style="transform:scale(0.8);position:fixed;top:5px;left:5px" alt="">
   <loading/>
-  <div style="width:300px" id="waveform"></div>
   <div class="grid">
 <!-- Settings -->
     <div style="position:relative;margin-left:80px"><playlist/></div>
@@ -33,11 +32,14 @@ export default {
     }
   },
   mounted(){
+    const audio = document.querySelector('#myAudio');
+    console.clear();
     setTimeout(()=>{
       document.querySelector('#splash').classList.add('fadeOutLeft');
     },4000)
     document.body.classList.add('hideControls');
     window.addEventListener('keydown',(e)=>{
+      console.log(e.code);
       if(e.code==='Space'){
         if(e.srcElement.classList.contains('inputElem')){
           console.log("normal behaviour");
@@ -45,18 +47,19 @@ export default {
           e.preventDefault();
           if(document.body.classList.contains('playingSong')){
             document.body.classList.remove('playingSong');
-            document.querySelector('#myAudio').pause();
+            audio.pause();
           }else{
             document.body.classList.add('playingSong')
-            document.querySelector('#myAudio').play();
+            audio.play();
           }//
-          const audio = document.querySelector('#myAudio');
-          if(e.code ==='ArrowLeft'){
-              audio.currentTime -=5;
-            }else if(e.code ==='ArrowRight'){
-            audio.currentTime +=5;
-          }
         }
+      }
+      if(e.code ==='ArrowLeft'){
+        console.log("Called");
+        audio.currentTime -=5;
+      }else if(e.code ==='ArrowRight'){
+        audio.currentTime +=5;
+        console.log("Called");
       }
       })
   

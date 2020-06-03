@@ -33,6 +33,8 @@ const actions = {
         document.body.classList.add('showingBackBt');
         document.querySelector('#playingType').style.marginLeft = '-50px'
         document.querySelector('#playingType').textContent = 'Recently Played'
+        document.body.classList.add('showBackArrow');
+
         commit('renderRecents');
     },
     removeSongFromQueue({commit},index){

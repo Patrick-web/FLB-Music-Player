@@ -51,7 +51,7 @@ export default {
                 // if(item.tags)
                 if(item.tags==undefined || item.tags.common.picture == undefined){
                     poster = false;
-                    duration = 0;
+                    duration = false;
                 }else{
                     poster = item.tags.common.picture[0];
                     duration = Math.floor(item.tags.format.duration);
@@ -68,6 +68,7 @@ export default {
             if(songs.length>0){
                 this.persistFolderSongs(songs);
                 this.renderSongsFromFolder();
+                document.querySelector('#playingType').textContent = 'Added'
             }
             document.body.classList.remove('loadingNow');
             document.querySelector('#loadingImg').classList.remove('jello');

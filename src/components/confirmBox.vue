@@ -1,6 +1,6 @@
 <template>
   <div class="confirm">
-      <p id="confirmText">Delete the Podcast Playlist ?</p>
+      <p id="confirmText"></p>
       <div class="choices">
           <button @click="sayYes" id="yes">Yes</button>
           <button @click="sayNo" id="no">No</button>

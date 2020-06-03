@@ -69,7 +69,8 @@ export default {
     ...mapActions(['renderSongsFromFolder','persistPreviouslyLoadedSongs','renderPreviouslyLoaded','loadRecents']),
 
     backToAddedSongs(){
-        document.body.classList.remove('showingPlaylist');
+        document.body.classList.remove('showBackArrow');
+        document.querySelector('#playingType').style.marginLeft = '0px'
         this.renderSongsFromFolder();
         document.querySelector('#playingType').textContent = 'Added'
     },
@@ -93,7 +94,7 @@ export default {
 </script>
 
 <style lang='scss'>
-.showingBackBt{
+.showBackArrow{
     #backToAdded{
       transform: scale(1) !important;
     }
