@@ -1,5 +1,6 @@
 <template>
 <div class="wrapper">
+  <img class="animated faster" src="@/assets/splash.svg" id="splash" alt="">
   <img src="@/assets/logo.svg" style="transform:scale(0.8);position:fixed;top:5px;left:5px" alt="">
   <loading/>
   <div style="width:300px" id="waveform"></div>
@@ -23,18 +24,18 @@ import start from '@/views/start.vue'
 import sideNav from '@/components/sideNav.vue'
 import player from '@/components/bottomControls.vue'
 import loading from '@/components/loading.vue'
-const songSrc = require('./assets/Syntax200.mp3')
-import "@/assets/howler.js"
 
 import 'module';
 export default {
   data() {
     return {
-      audioFile: songSrc,
       isPlaying: false,
     }
   },
   mounted(){
+    setTimeout(()=>{
+      document.querySelector('#splash').classList.add('fadeOutLeft');
+    },4000)
     document.body.classList.add('hideControls');
     window.addEventListener('keydown',(e)=>{
       if(e.code==='Space'){
@@ -129,5 +130,12 @@ body{
   display: grid;
   grid-template-columns: 20% 50% 30%;
   height: 100vh;
+}
+#splash{
+  position: fixed;
+  top:0;
+  left:0;
+  width: 100vw;
+  z-index: 10;
 }
 </style>

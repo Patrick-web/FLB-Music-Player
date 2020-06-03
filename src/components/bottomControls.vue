@@ -36,7 +36,6 @@
 import visualizer from '@/components/visualizer.vue'
 import playbackBt from '@/components/play-pauseBt.vue'
 import plAdder from '@/components/playListAdder.vue'
-const sampleFile = require('@/assets/audio/lost-it-to-trying.mp3')
 export default {
   components:{
     playbackBt,
@@ -44,7 +43,6 @@ export default {
     plAdder
   },
   data(){return{
-    song:sampleFile,
     songLength:100
   }},
   methods:{

@@ -159,6 +159,11 @@ export default {
                 document.body.classList.remove('hideControls');
             };
             const card = e.currentTarget;
+            if(card.classList.contains('toPlayNex')){
+                card.classList.remove('toPlayNex');
+                window.nextOveride = false;
+                window.hasResumed = true;
+            }
             document.body.classList.add('playingSong');
             this.resetProgress()
             if(document.querySelector('.playing')){

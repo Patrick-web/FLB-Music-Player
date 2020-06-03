@@ -34,6 +34,7 @@ function createWindow () {
     win.loadURL('app://./index.html')
   }
   win.maximize()
+  console.log(win);
   win.on('closed', () => {
     win = null
   })
