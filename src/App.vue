@@ -1,7 +1,7 @@
 <template>
 <div class="wrapper">
   <img class="animated faster" src="@/assets/splash.svg" id="splash" alt="">
-  <img src="@/assets/logo.svg" style="transform:scale(0.8);position:fixed;top:5px;left:5px" alt="">
+  <img src="@/assets/logo.svg" style="transform:scale(0.6);position:fixed;top:-5px;left:-5px" alt="">
   <loading/>
   <div class="grid">
 <!-- Settings -->

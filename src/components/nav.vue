@@ -13,6 +13,10 @@
           <img src="@/assets/folder.png" alt="">
           <p class="exp" style="width:150px">Add Music folder</p>
       </div>
+      <div v-on:click="pickSongs(true)"  id='musicPlus' class="icn">
+          <img src="@/assets/musicPlus.svg"  alt="">
+          <p class="exp" style="background:#00FF8C">Add Songs</p>
+      </div>
   </div>
 </template>
 
@@ -43,6 +47,19 @@ export default {
                 this.extractInfo(this.songs)    
             },200)
         },
+        pickSongs() {
+            document.body.classList.add('loadingNow');
+            document.querySelector('#loadingImg').classList.add('jello');
+            setTimeout(()=>{
+                let data = electron.ipcRenderer.sendSync("pickSongs");
+
+                for (let file of data) {
+                    this.songs.push(file);
+                }
+            // this.setPoster(this.songs[1].tags.common.picture[0]);
+                this.extractInfo(this.songs)    
+            },200)
+        },
         extractInfo(data){
             let songs = []
             data.forEach(item=>{
@@ -51,7 +68,7 @@ export default {
                 // if(item.tags)
                 if(item.tags==undefined || item.tags.common.picture == undefined){
                     poster = false;
-                    duration = false;
+                    duration = 0;
                 }else{
                     poster = item.tags.common.picture[0];
                     duration = Math.floor(item.tags.format.duration);

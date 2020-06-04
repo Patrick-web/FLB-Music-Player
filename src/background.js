@@ -228,9 +228,12 @@ ipcMain.on("pickMusic", async (event, folder) => {
 	let files = dialog.showOpenDialog({
 		title: "Add music",
 		filters: [
-			{name: "Sound (.mp3, .wav, .ogg, .m4a)", extensions: ["mp3", "wav", "ogg","m4a"]}
+			{name: "Sound (.mp3, .wav, .ogg, .m4a)",
+			//  extensions: ["mp3", "wav", "ogg","m4a"]
+			}
 		],
-		properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
+		properties: ["openDirectory"]
+		// properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
 	});
 
 	if (!files) {
@@ -242,6 +245,34 @@ ipcMain.on("pickMusic", async (event, folder) => {
 
 	for (let file of files) {
 		let arr = await parseFile(file, true);
+		if (arr)
+			output = output.concat(arr);
+	}
+
+	event.returnValue = output;
+});
+
+ipcMain.on("pickSongs", async (event) => {
+	let files = dialog.showOpenDialog({
+		title: "Add songs",
+		filters: [
+			{name: "Sound (.mp3, .wav, .ogg, .m4a)",
+			 extensions: ["mp3", "wav", "ogg","m4a"]
+			}
+		],
+		properties: ["multiSelections","openFile"]
+		// properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
+	});
+
+	if (!files) {
+		event.returnValue = [];
+		return null;
+	}
+
+	let output = [];
+
+	for (let file of files) {
+		let arr = await parseFile(file, false);
 		if (arr)
 			output = output.concat(arr);
 	}
