@@ -1,5 +1,8 @@
 <template>
 <div class="playerArea">
+  
+  <img id="stars" @click="showFeatures" src="@/assets/stars.svg" alt="">
+  <features/>
 <div class="visulizerArea" style="z-index:-1">
   <visualizer/>
 </div>
@@ -36,16 +39,21 @@
 import visualizer from '@/components/visualizer.vue'
 import playbackBt from '@/components/play-pauseBt.vue'
 import plAdder from '@/components/playListAdder.vue'
+import features from '@/components/features.vue'
 export default {
   components:{
     playbackBt,
     visualizer,
-    plAdder
+    plAdder,
+    features
   },
   data(){return{
     songLength:100
   }},
   methods:{
+    showFeatures(){
+      document.body.classList.add('showFeatures')
+    },
     showListAdder(){
       document.body.classList.toggle('showListAdder')
     },
@@ -98,6 +106,18 @@ export default {
 .playerArea{
   position: relative;
   height: 100vh;
+  #stars{
+    position: absolute;
+    top:10px;
+    right: 0;
+    width:50px;
+    transform: scale(1);
+    transition: 0.2s cubic-bezier(1, 0, 0, 1);
+    z-index: 11;
+  }
+  #stars:hover{
+    cursor: pointer;
+  }
 }
 .visulizerArea{
   height: 69%;

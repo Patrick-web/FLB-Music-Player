@@ -22,7 +22,7 @@
       :audioIndex="75"
     > -->
       <card
-        :key='song.title'
+        :key='song.id'
          v-for="(song,index) in songQueue"
         :path="song.path" 
         :poster="song.poster"

@@ -100,7 +100,7 @@ export default {
         },
         setPoster(arg){
             if(arg === false){
-                return '/img/poster.40d396e6.png'
+                return '/img/poster.e5b0f5a2.png'
             }else{
                 const format = arg.format;
                 const pictureBuffer = arg.data;

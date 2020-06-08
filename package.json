@@ -12,9 +12,12 @@
   },
   "main": "background.js",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "core-js": "^3.6.4",
     "dataurl": "^0.1.0",
-    "ffmpeg": "0.0.4",
+    "ffbinaries": "^1.1.4",
+    "ffmpeg-static": "^4.2.2",
+    "fluent-ffmpeg": "^2.1.2",
     "howler": "^2.2.0",
     "mime-types": "^2.1.27",
     "music-metadata": "^6.4.0",
@@ -36,8 +39,5 @@
     "electron": "^5.0.0",
     "vue-cli-plugin-electron-builder": "^1.4.6",
     "vue-template-compiler": "^2.6.11"
-  },
-  "resolutions": {
-    "electron-builder": "22.2.0"
   }
 }

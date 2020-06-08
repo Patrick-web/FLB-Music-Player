@@ -12,19 +12,28 @@ const state = {
     ],
     recents:[
 
-    ]
+    ],
+    songsToMix:[],
+    selectedToMix:[]
 };
 
 const getters = {
     playlists: (state)=>state.playlists,
     songQueue: (state)=>state.songQueue,
-    recents: (state)=>state.recents
+    recents: (state)=>state.recents,
+    songsToMix:(state)=>state.songsToMix,
+    selectedToMix:(state)=>state.selectedToMix
 };
 
 const actions = {
+    addSongToMix({commit},index){
+        commit('addSongToMix',index);
+    },
+    unMix({commit},index){
+        commit('unMix',index)
+    },
     addToRecents({commit},index){
         commit('addToRecents',index);
-
     },
     loadRecents({commit},songs){
         commit('loadRecents',songs);
@@ -41,7 +50,8 @@ const actions = {
         commit('removeSongFromQueue',index)
     },
     persistFolderSongs({commit},songs){
-        commit('persistFolderSongs',unduplicate(songs,state.addedSongs))
+        commit('persistFolderSongs',unduplicate(songs,state.addedSongs));
+        commit('queueToMix',songs);
     },
     renderSongsFromFolder({commit}){
         commit('renderSongsFromFolder');
@@ -73,16 +83,30 @@ const actions = {
         commit('loadPlaylistsFromFS',playlists)
     },
     persistPreviouslyLoadedSongs({commit},songs){
-        commit('persistPreviouslyLoadedSongs',songs)
+        commit('persistPreviouslyLoadedSongs',songs);
+
     },
     renderPreviouslyLoaded({commit},songs){
         commit('renderPreviouslyLoaded',unduplicate(songs,state.addedSongs));
+        commit('queueToMix',songs);
         // const rendered = document.querySelectorAll('.card');
         // rendered[0].querySelector('.a')
     }
 };
 
 const mutations = {
+    addSongToMix:(state,index)=>{
+        state.selectedToMix.push(state.songsToMix[index]);
+        state.songsToMix.splice(index,1)
+
+    },
+    unMix:(state,index)=>{
+        state.songsToMix.push(state.selectedToMix[index]);
+        state.selectedToMix.splice(index,1);
+    },
+
+    queueToMix:(state,songs)=> state.songsToMix = unduplicate([...state.songsToMix,...songs]),
+
     addToRecents:(state,index)=>{
         state.recents.push(state.songQueue[index]);
         state.recents = unduplicate(state.recents);
@@ -98,7 +122,7 @@ const mutations = {
 
     renderSongsFromFolder: (state)=>state.songQueue = state.addedSongs,
 
-    persistFolderSongs: (state,songs)=>state.addedSongs = [state.addedSongs,...songs],
+    persistFolderSongs: (state,songs)=>state.addedSongs = unduplicate([...state.addedSongs,...songs]),
 
     persistPreviouslyLoadedSongs: (state,songs)=>state.addedSongs = songs,
 
@@ -136,7 +160,7 @@ const mutations = {
 function  unduplicate(array1,array2){
     let withDuplicates;
     if(array2){
-        withDuplicates = [...array1,array2];
+        withDuplicates = [...array1,...array2];
         console.log("Two arrays passed");
     }else{
         console.log("One array passed");

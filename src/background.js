@@ -7,6 +7,30 @@ import * as dataUrl from "dataurl";
 import * as mimeTypes from "mime-types";
 import * as fs from 'fs'
 import * as path from 'path'
+const os = require('os')
+import * as ffbinaries from 'ffbinaries'
+const ffmpeg = require('fluent-ffmpeg');
+import { uuid } from 'uuidv4'
+import { format } from 'util';
+
+const musicFolder = app.getPath('music');
+const convertedSongs = [];
+let indexToConvert = 0;
+function getBinaries(callback) {
+	var platform = ffbinaries.detectPlatform();
+  
+	return ffbinaries.downloadFiles(['ffmpeg', 'ffprobe'], {platform: platform, quiet: true, destination: os.homedir()},function (err, data) {
+	  console.log('Downloading binaries for ' + platform + ':');
+	  console.log('err', err);
+	//   console.log('data', data);
+	  return callback(err, data);
+	});
+}
+
+
+
+
+
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -155,12 +179,12 @@ async function parseFile(file, scanDir) {
 		return output;
 	}else{
 		let ext = path.extname(file);
-		if (ext != ".mp3" && ext != ".ogg" && ext != ".wav" && ext != ".m4a")
+		if (ext != ".mp3" && ext != ".ogg" && ext != ".wav" && ext != ".mp3")
 			return;
 			
 		let out = {date: stat.ctimeMs, extension: ext, location: file, name: path.basename(file).split('.').slice(0, -1).join('.')};
 
-		if (ext == ".mp3" || ext == ".m4a") {
+		if (ext == ".mp3" || ext == ".mp3") {
 			out.tags = await mm.parseFile(file, {native: true});
     }
 
@@ -228,8 +252,8 @@ ipcMain.on("pickMusic", async (event, folder) => {
 	let files = dialog.showOpenDialog({
 		title: "Add music",
 		filters: [
-			{name: "Sound (.mp3, .wav, .ogg, .m4a)",
-			//  extensions: ["mp3", "wav", "ogg","m4a"]
+			{name: "Sound (.mp3, .wav, .ogg, .mp3)",
+			//  extensions: ["mp3", "wav", "ogg","mp3"]
 			}
 		],
 		properties: ["openDirectory"]
@@ -256,8 +280,8 @@ ipcMain.on("pickSongs", async (event) => {
 	let files = dialog.showOpenDialog({
 		title: "Add songs",
 		filters: [
-			{name: "Sound (.mp3, .wav, .ogg, .m4a)",
-			 extensions: ["mp3", "wav", "ogg","m4a"]
+			{name: "Sound (.mp3, .wav, .ogg, .mp3)",
+			 extensions: ["mp3", "wav", "ogg","mp3"]
 			}
 		],
 		properties: ["multiSelections","openFile"]
@@ -279,3 +303,167 @@ ipcMain.on("pickSongs", async (event) => {
 
 	event.returnValue = output;
 });
+
+// ipcMain.on("mixSongs", async (event,concatString) => {
+// 	exec(`ffmpeg -i 'concat:${concatString}' -acodec copy /home/x/Music/flbmixed.mp3`, (error, stdout, stderr) => {
+// 		if (error) {
+// 			console.log(`error: ${error.message}`);
+// 			return;
+// 		}
+// 		if (stderr) {
+// 			console.log(`stderr: ${stderr}`);
+// 			return;
+// 		}
+// 		console.log(`stdout: ${stdout}`);
+// 	});
+// });
+ipcMain.on("mixSongs", async (event,songs) => {
+	convertedSongs.length  = 0;
+	indexToConvert =  songs.length - 1;
+	const userData = app.getPath('userData');
+	const pth = path.join(userData, 'ffPaths.json');
+	// console.log(pth);
+	console.log(pth);
+	if (fs.existsSync(pth)) {
+		const paths = JSON.parse(fs.readFileSync(pth, "utf8"));
+		ffmpeg.setFfmpegPath(paths.ffmpeg);
+		const fdata = analyseFormats(songs);
+		if(fdata.notSame){
+			console.log("Converting first");
+			convertToMp3(songs,event);
+		}else{
+			console.log("All same format thus\n Merging...");
+			merge(songs,event);
+		}
+	}else{
+/* tell user to turn on internet connnetion
+in order to download ffmpeg and this provide a button that
+executes the below function
+*/
+		getBinaries(function (err, data) {
+			if (err) {
+				  console.log('Downloads failed.');
+			}else{
+				const fileName ='ffPaths.json'
+				const content = {
+					ffmpeg:data[0].path +'/ffmpeg',
+					ffprobe:data[1].path +'/ffprobe'
+				};
+				const userData = app.getPath('userData');
+				console.log(JSON.stringify(content));
+				fs.writeFileSync(path.join(userData, fileName), JSON.stringify(content));
+				console.log('Downloads successful.');
+			}
+		});
+
+		event.returnValue = null;
+	}
+});
+
+ipcMain.on("convertVideoToMp3", async (event,concatString) => {
+	function convert(input, output, callback) {
+		ffmpeg(input)
+			.output(output)
+			.on('end', function() {                    
+				console.log('conversion ended');
+				callback(null);
+			}).on('error', function(err){
+				console.log('error: ', e.code, e.msg);
+				callback(err);
+			}).run();
+	}
+	
+	convert('./df.mp4', './output.mp3', function(err){
+	   if(!err) {
+		   console.log('conversion complete');
+		   //...
+	
+	   }
+	});
+});
+ function merge(songs,event){
+	console.log('Passed to merger\n' + songs);
+	const command = ffmpeg();
+
+	songs.forEach(song => {
+		command.input(song);
+	});
+	console.log("Merger started");
+	command
+	.on('error', function(err) {
+		console.log('An error occurred: ' + err.message);
+	})
+	.on('progress', (progress) => {
+		// console.log(JSON.stringify(progress));
+		console.log('Merging...');
+
+	})
+	.on('end', function() {
+		console.log('Merging finished !');
+		async function parseMix(){
+			const tempMix = await mm.parseFile(`${musicFolder}/fmixed.mp3`, {native: true})
+			event.returnValue = {
+				mixData:tempMix,
+				mixPath : `${musicFolder}/fmixed.mp3`
+			};
+
+		}
+		parseMix();
+	})
+	.mergeToFile(`${musicFolder}/fmixed.mp3`, musicFolder);
+
+}
+
+
+
+function convertToMp3(songs,event){
+	if(indexToConvert === -1){
+		return merge(convertedSongs,event);
+	}
+	let track = songs[indexToConvert];//your path to source file
+	const id = uuid();
+	const savePath = `${musicFolder}/converted/${id}.mp3`; 
+	console.log('Intial path ' + id);
+	let format = track.match(/\..+/g)[0];
+	console.log(track.match(/\..+/g));
+	if(format!== '.mp3' && format!== '.m4a'){
+		console.log('Converting ' + track);
+
+		ffmpeg(track)
+		.toFormat('mp3')
+		.on('error', (err) => {
+			console.log('An error occurred: ' + err.message);
+		})
+		.on('progress', (progress) => {
+			// console.log(JSON.stringify(progress));
+			console.log('Processing: ' + progress.targetSize + ' KB converted');
+		})
+		.on('end', () => {
+			console.log('Processing finished !');
+			convertedSongs.unshift(savePath);
+			console.log('Pushed path ' + id);
+			indexToConvert -=1;
+			convertToMp3(songs);
+		})
+		.save(savePath);//path where you want to save your file
+	}else{
+		console.log(format + ' ' + track + ' addded');
+		convertedSongs.push(track);
+		console.log('Pushed path ' + track);
+		indexToConvert -=1;
+		convertToMp3(songs,event);
+	}
+}; 	
+
+
+function analyseFormats(songs){
+	const formats = songs.map((song)=>song.match(/\..+/g)[0]);
+	console.log(formats);
+	const sameFormat = formats.some((format)=>format!==formats[0]);
+	console.log("Is not same format " + sameFormat);
+	const data = {
+		notSame:sameFormat,
+		format:songs[0].match(/\..+/g)[0]
+	}
+	return data;
+}

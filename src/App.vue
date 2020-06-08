@@ -4,14 +4,15 @@
   <img src="@/assets/logo.svg" style="transform:scale(0.6);position:fixed;top:-5px;left:-5px" alt="">
   <loading/>
   <div class="grid">
-<!-- Settings -->
-    <div style="position:relative;margin-left:80px"><playlist/></div>
+  <div style="position:relative;margin-left:80px">
+    <playlist/>
+  </div>
     <player/>
     <tracks/>
-  </div>
-  <!-- <start/> -->
+  </div> 
   <bg/>
-  <!-- <sideNav/> -->
+  <mixer id="mixerCont"/>
+  <converter/>
 </div>
 
 </template>
@@ -20,11 +21,12 @@ import playlist from './components/playlists.vue'
 import bg from '@/components/particleBg.vue'
 import tracks from '@/views/tracks.vue'
 import start from '@/views/start.vue'
+import mixer from '@/views/mixer.vue'
+import converter from '@/views/converter.vue'
 import sideNav from '@/components/sideNav.vue'
 import player from '@/components/bottomControls.vue'
 import loading from '@/components/loading.vue'
 
-import 'module';
 export default {
   data() {
     return {
@@ -87,6 +89,8 @@ export default {
     sideNav,
     loading,
     playlist,
+    mixer,
+    converter
   }
 }
 </script>
@@ -139,6 +143,7 @@ body{
   top:0;
   left:0;
   width: 100vw;
-  z-index: 10;
+  z-index: 20;
 }
+
 </style>

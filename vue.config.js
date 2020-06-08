@@ -2,17 +2,22 @@ module.exports = {
     pluginOptions: {
       electronBuilder: {
         builderOptions: {
-          linux: {
-            icon: './icons/png/1024x1024.ico'
+          "extraFiles":{
+            "from":"node_modules/ffmpeg-static/bin",
+            "to":"./resources/app.asar.unpacked/bin/"
           },
-          win:{
-            icon: './icons/win/app.ico'
+          "linux": {
+            "icon": './icons/png/1024x1024.ico'
           },
-          mac:{
-            icon: './icons/mac/app.icns'
+          "win":{
+            "icon": './icons/win/app.ico'
           },
+          "mac":{
+            "icon": './icons/mac/app.icns'
+          }
 
         }
       }
     }
   }
+

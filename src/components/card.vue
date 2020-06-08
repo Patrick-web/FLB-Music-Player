@@ -271,6 +271,8 @@ export default {
             height: 85px;
             img{ 
                 width: 70px;
+                transform: scale(1);
+                transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             }
         }
         .cardBody{
@@ -300,12 +302,11 @@ export default {
         }
     }
     .card:hover{
-        background: linear-gradient(90deg,rgba(128, 0, 128, 0.452),rgba(255, 166, 0, 0.445));
+        background: linear-gradient(90deg,rgba(128, 0, 128, 0.452),rgba(212, 0, 255, 0.445));
         cursor: pointer;
         .poster{
             img{
-                border-radius: 10px;
-                border:2px solid white;
+                transform: scale(1.1);
             }
         }
     }
@@ -318,7 +319,6 @@ export default {
         .poster{
             img{
                 border-radius: 10px 0px 10px 0px;
-                border:2px solid white;
             }
         }
     }
@@ -327,8 +327,6 @@ export default {
         cursor: default;
         .poster{
             img{
-                border-radius: 10px 0px 10px 0px;
-                border:2px solid white;
             }
         }
     }

@@ -47,6 +47,7 @@ export default {
 </script>
 
 <style>
+
 .player{
     height: 100vh;
     position: fixed;
