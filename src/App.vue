@@ -41,7 +41,6 @@ export default {
     },4000)
     document.body.classList.add('hideControls');
     window.addEventListener('keydown',(e)=>{
-      console.log(e.code);
       if(e.code==='Space'){
         if(e.srcElement.classList.contains('inputElem')){
           console.log("normal behaviour");
@@ -57,11 +56,9 @@ export default {
         }
       }
       if(e.code ==='ArrowLeft'){
-        console.log("Called");
         audio.currentTime -=5;
       }else if(e.code ==='ArrowRight'){
         audio.currentTime +=5;
-        console.log("Called");
       }
       })
   

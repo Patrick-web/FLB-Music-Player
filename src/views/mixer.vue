@@ -2,7 +2,7 @@
   <div @click="resetMixer" class="mixer featurePage">
       <div class="mixingloader">
           <img id="mixLoader" class="animated infinite" src="@/assets/mixing.png" alt="">
-          <h2>Mixing...</h2>
+          <h2 id="infoText">Mixing...</h2>
       </div>
       <h1>Mix Maker</h1>
       <p @click="closeMixer" id="closeMixer">Close Mixer</p>
@@ -29,8 +29,27 @@
             <div id="mixplayBt" style="padding:10px" @click="create">
                 <img style="width:60px" src="@/assets/merge.svg" alt="">
             </div>
-          </div>
+            <div @click="saveMix" id="saveMix">Save</div>
+            <form id="mixForm">
+                <div class="form-group">
+                    <label for="mixname">Mix Title</label>
+                    <input type="text" value="FLB Mix" name="" id="mixname">
+                </div>
+                <div class="form-group">
+                    <label for="artist">Artist</label>
+                    <input type="text" value="FLB player" id="artist">
+                </div>
+                <div class="form-group">
+                    <label for="album">Album</label>
+                    <input type="text" value="F Mixes" id="album">
+                </div>
+                <div class="albArt">
+                    <img id="albArt" src="@/assets/poster.png" alt="">
+                    <div style="text-align:center;font-weight:600" id="selectPoster">Select Album art</div>
+                </div>
+            </form>
 
+          </div>
 
         <div class="nodeswrapper">
 
@@ -56,6 +75,14 @@ import * as electron from 'electron';
 import {mapGetters,mapActions} from 'vuex';
 
 export default {
+data(){return{
+	 tags:{
+		title: 'FLB Mix',
+		artist: 'Flb Player',
+		album: "FLB release",
+		APIC: "/img/poster.e5b0f5a2.png",
+	}
+}},
 computed:mapGetters(['songsToMix','selectedToMix','songQueue']),
 methods:{
     ...mapActions(['addSongToMix','unMix']),
@@ -64,58 +91,113 @@ methods:{
         card.classList.add('bounceOutDown');
         setTimeout(()=>{
             this.addSongToMix(index)
-        },800)
+        },800) 
     },
     removeSongFromMix(e,index){
         const node = e.currentTarget.parentElement;
         node.classList.add('zoomOut');
         setTimeout(()=>{
             this.unMix(index);
+            if(this.selectedToMix.length<2){
+                if(document.body.classList.contains('showMixSaver')){
+                    document.body.classList.add('showMixSaver');
+                }
+            }
         },600)
     },
     closeMixer(){
         document.body.classList.remove('showMixer');
+        this.hideForm();
         this.resetMixer();
+    },
+    hideForm(){
+        if(document.body.classList.contains('showMixForm')){
+            document.body.classList.remove('showMixForm');
+        }
+        if(document.body.classList.contains('showMixSaver')){
+            document.body.classList.remove('showMixSaver');
+        }    
     },
     resetMixer(){
         if(document.body.classList.contains('playingMix')){
             document.body.classList.remove('playingMix');
         }
+
     },
-    seekMix(){
-        
+    getTags(){
+        const tags={
+            title: document.querySelector('#mixname').value,
+            artist: document.querySelector('#artist').value,
+            album: document.querySelector('#album').value,
+            APIC: document.querySelector('#albArt').src,
+        }
+        return tags
     },
-    playMix(mix){
+    async saveMix(){
+        if(document.body.classList.contains('showMixForm')){
+            // this.h
+            document.querySelector('#infoText').textContent = "Saving..."
+            document.body.classList.add('currentlyMixing');
+            try {
+                const res = await electron.ipcRenderer.sendSync("saveMix",this.getTags());
+                if(res === "success"){
+                    document.querySelector('#infoText').textContent = "Saved"
+                    setTimeout(()=>{
+                        document.body.classList.remove('currentlyMixing');
+                    },1000)
+                }else{
+                    document.querySelector('#infoText').textContent = "Error in saving mix"
+                    setTimeout(()=>{
+                        document.body.classList.remove('currentlyMixing');
+                    },1000)
+                }
+                console.log(this.tags);
+            } catch (error) {
+            console.log(error);                                                        
+            }
+        }else{
+            document.body.classList.add('showMixForm');
+        }
+    },
+    playMix(){
         setTimeout(()=>{
             document.querySelector('.card').click();
             document.body.classList.add('playingMix');
             document.body.classList.remove('currentlyMixing');
             document.querySelector('#mixLoader').classList.remove('pulse');
+            document.body.classList.add('showMixSaver');
         },100)
     },
     async create(){
         if(this.selectedToMix.length>1){
             document.body.classList.add('currentlyMixing');
+            document.querySelector('#infoText').textContent = "Mixing..."
+
             document.querySelector('#mixLoader').classList.add('pulse');
             setTimeout(async ()=>{
                 const songPaths = this.selectedToMix.map(song=>song.path);
                 const data = await electron.ipcRenderer.sendSync("mixSongs",songPaths);
                 console.log(data);
-
-                const mixObj = {
-                    id:JSON.stringify(Date.now()),
-                    title:'Unsaved Mix',
-                    path:data.mixPath,
-                    poster:'/img/poster.e5b0f5a2.png',
-                    duration:data.mixData.format.duration
+                if(!data){
+                    document.querySelector('#mixLoader').classList.remove('pulse');
+                    alert("Error in mixing");
+                }else{
+                    const mixObj = {
+                        id:JSON.stringify(Date.now()),
+                        title:'Unsaved Mix',
+                        path:data.mixPath,
+                        poster:'/img/poster.e5b0f5a2.png',
+                        duration:data.mixData.format.duration
+                    }
+                    this.songQueue.unshift(mixObj);
+                    this.playMix()
                 }
-                console.log(mixObj);
-                this.songQueue.unshift(mixObj);
-                return this.playMix();
+
             },200)
         }else{
             alert('Cannot create mix of less than 2 songs')
         }
+        
     }
 
 },
@@ -136,6 +218,21 @@ mounted(){
         background: rgb(75, 1, 125) !important;
     }
 }
+.showMixSaver{
+    #saveMix{
+        transform: scale(1) !important;
+    }    
+}
+.showMixForm{
+    #mixForm{
+        transform: scale(1) !important;
+    }
+    #saveMix{
+        top: -90px !important;
+        z-index: 3;
+    }      
+}
+
 .featurePage{
     h1{ 
         background: #9900FF;
@@ -221,7 +318,7 @@ mounted(){
         }
         .card-song:hover{
             cursor:pointer;
-            background: lighten($color: #310051, $amount: 10);
+            background: lighten($color: #7e0097, $amount: 10);
             img{
                 transform: scale(1.05);
             }
@@ -294,12 +391,13 @@ mounted(){
                 transition: 0.2s;
             }
             .removeBt:hover{
-                background: rgb(255, 0, 119);
+                background: rgb(255, 0, 55);
                 color: white;
             }
         }
 
         .mixnode:hover{
+            background: rgb(255, 0, 255);
             cursor: pointer;
             .nodeName{
                 left:-800px;
@@ -319,10 +417,91 @@ mounted(){
                 background: #2E004C;
                 border-radius:10px;
                 padding: 5px;
+                transform: scale(1);
+                transition: 0.2s cubic-bezier(0.075, 0.82, 0.165, 1);
+
             }
             #mixplayBt:hover{
+                transform: scale(1.1);
+                top:-40px;
                 cursor: pointer;
-                background: lighten($color: #2E004C, $amount: 5);
+                box-shadow: 0px 0px 30px rgba(204, 0, 255, 0.616);
+                background: lighten($color: rgb(187, 0, 187), $amount: 5);
+                img{
+                    filter: sepia(1);
+                }
+            }
+            #saveMix{
+                box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.788);
+                position: absolute;
+                top:-25px;
+                left:72%;
+                transform: translateX(-50%,-50%);
+                background: rgb(0, 134, 83);
+                border-radius:50px;
+                padding: 5px;
+                width: 100px;
+                height: 40px;
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 2em;
+                font-weight: 900;
+                transform: scale(0);
+                transition: 0.2s cubic-bezier(0.075, 0.82, 0.165, 1);
+            }
+            #saveMix:hover{
+                cursor: pointer;
+                box-shadow: 0px 0px 30px rgba(0, 255, 255, 0.788);
+                background: lighten($color: rgb(0, 129, 134), $amount: 2);
+                // width: 120px;
+                top:-30px;
+                // height: 60px;
+                border-radius: 5px;
+            }
+            #mixForm{
+                box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.616);
+                position: absolute;
+                top:-450px;
+                left:68%;
+                transform: translateX(-50%,-50%);
+                background: rgb(84, 0, 139);
+                border-radius:10px;
+                padding: 5px;
+                width: 200px;  
+                height: 370px;
+                transform: scale(0);
+                transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                .form-group{
+                    margin-bottom: 10px;
+                }
+                input{
+                    background: #1f021fad;
+                    color: white;
+                    margin-bottom: 8px;
+                    padding: 5px;
+                    padding-left: 10px;
+                    margin-left: 10px;
+                    border-radius: 30px;
+                    width: 85%;
+                    outline: none;
+                    border:none;
+                    font-size: 1em;
+                    font-weight: 400;
+                }
+                img{
+                    width: 70px;
+                    margin-left: 10px;
+                    display: block;
+                } 
+            }
+            .albArt{
+                margin-top: 10px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                justify-content: center;
+                align-items: center;
             }
         }
     }
@@ -375,5 +554,13 @@ mounted(){
     color: white;
     cursor: pointer;
 }
-
+#selectPoster{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 10px;
+}
+#selectPoster:hover{
+    background: rgba(53, 0, 53, 0.425);
+    cursor: pointer;
+}
 </style>

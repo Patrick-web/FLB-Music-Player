@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow,ipcMain,dialog } from 'electron'
+import { app, protocol, BrowserWindow,ipcMain,dialog, Menu } from 'electron'
 import { createProtocol,installVueDevtools} from 'vue-cli-plugin-electron-builder/lib'
 import * as mm from "music-metadata";
 import * as dataUrl from "dataurl";
@@ -12,8 +12,20 @@ import * as ffbinaries from 'ffbinaries'
 const ffmpeg = require('fluent-ffmpeg');
 import { uuid } from 'uuidv4'
 import { format } from 'util';
+const moveFile = require('move-file');
+const NodeID3 = require('node-id3');
 
-const musicFolder = app.getPath('music');
+
+const appDataFolder = app.getPath('userData');
+const musicDir = app.getPath('music');
+const videosDir = app.getPath('videos');
+const convertedDir = path.join(appDataFolder,'converted');
+const lyricsDir = path.join(appDataFolder,'lyrics');
+const mixesDir = path.join(musicDir,'flbMixes');
+const lyricVids = path.join(videosDir,'flbLyricVideos');
+
+let mergeEvent;
+
 const convertedSongs = [];
 let indexToConvert = 0;
 function getBinaries(callback) {
@@ -43,7 +55,7 @@ protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({width: 800, height: 600, webPreferences: {
+  win = new BrowserWindow({width: 800, height: 600,autoHideMenuBar: true, webPreferences: {
 	nodeIntegration: true,
 	webSecurity:false
   } })
@@ -57,8 +69,9 @@ function createWindow () {
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
   }
-  win.maximize()
-//   console.log(win);
+  Menu.setApplicationMenu(null)
+  win.maximize();
+
   win.on('closed', () => {
     win = null
   })
@@ -317,7 +330,12 @@ ipcMain.on("pickSongs", async (event) => {
 // 		console.log(`stdout: ${stdout}`);
 // 	});
 // });
+ipcMain.on('saveMix', async (event,tags)=>{
+	saveMix(tags,event);
+})
+
 ipcMain.on("mixSongs", async (event,songs) => {
+	mergeEvent = event
 	convertedSongs.length  = 0;
 	indexToConvert =  songs.length - 1;
 	const userData = app.getPath('userData');
@@ -382,76 +400,90 @@ ipcMain.on("convertVideoToMp3", async (event,concatString) => {
 	});
 });
  function merge(songs,event){
-	console.log('Passed to merger\n' + songs);
-	const command = ffmpeg();
+	 if(!songs){
+		 event.returnValue = false;
+	 }else{
 
-	songs.forEach(song => {
-		command.input(song);
-	});
-	console.log("Merger started");
-	command
-	.on('error', function(err) {
-		console.log('An error occurred: ' + err.message);
-	})
-	.on('progress', (progress) => {
-		// console.log(JSON.stringify(progress));
-		console.log('Merging...');
+		console.log('Passed to merger\n' + songs);
+		const command = ffmpeg();
+		
 
-	})
-	.on('end', function() {
-		console.log('Merging finished !');
-		async function parseMix(){
-			const tempMix = await mm.parseFile(`${musicFolder}/fmixed.mp3`, {native: true})
-			event.returnValue = {
-				mixData:tempMix,
-				mixPath : `${musicFolder}/fmixed.mp3`
-			};
+		songs.forEach(song => {
+			command.input(song);
+		});
+		console.log("Merger started");
+			command
+			.on('error', function(err) {
+				console.log('An error occurred: ' + err.message);
+				mergeEvent.returnValue = false
+				setTimeout(()=>{
+					win.reload();
+				},1000)
+			})
+			.on('progress', (progress) => {
+				// console.log(JSON.stringify(progress));
+				console.log('Merging...');
 
-		}
-		parseMix();
-	})
-	.mergeToFile(`${musicFolder}/fmixed.mp3`, musicFolder);
+			})
+			.on('end',async ()=> {
+				console.log('Merging finished !');
+				console.log("Event is " + mergeEvent);
+				const tempMix = await mm.parseFile(`${appDataFolder}/fmixed.mp3`, {native: true})
+				mergeEvent.returnValue = {
+					mixData:tempMix,
+					mixPath : `${appDataFolder}/fmixed.mp3`
+				};
+				cleanUp()
 
+			})
+			.mergeToFile(`${appDataFolder}/fmixed.mp3`, appDataFolder);
+
+	}
 }
 
 
 
-function convertToMp3(songs,event){
+function convertToMp3(songs){
+	
 	if(indexToConvert === -1){
-		return merge(convertedSongs,event);
+		return merge(convertedSongs);
 	}
 	let track = songs[indexToConvert];//your path to source file
 	const id = uuid();
-	const savePath = `${musicFolder}/converted/${id}.mp3`; 
+	const savePath = `${appDataFolder}/converted/${id}.mp3`; 
 	console.log('Intial path ' + id);
 	let format = track.match(/\..+/g)[0];
 	console.log(track.match(/\..+/g));
 	if(format!== '.mp3' && format!== '.m4a'){
 		console.log('Converting ' + track);
-
-		ffmpeg(track)
-		.toFormat('mp3')
-		.on('error', (err) => {
-			console.log('An error occurred: ' + err.message);
-		})
-		.on('progress', (progress) => {
-			// console.log(JSON.stringify(progress));
-			console.log('Processing: ' + progress.targetSize + ' KB converted');
-		})
-		.on('end', () => {
-			console.log('Processing finished !');
-			convertedSongs.unshift(savePath);
-			console.log('Pushed path ' + id);
-			indexToConvert -=1;
-			convertToMp3(songs);
-		})
-		.save(savePath);//path where you want to save your file
+		try {
+			ffmpeg(track)
+			.toFormat('mp3')
+			.on('error', (err) => {
+				console.log('An error occurred: ' + err.message);
+			})
+			.on('progress', (progress) => {
+				// console.log(JSON.stringify(progress));
+				console.log('Processing: ' + progress.targetSize + ' KB converted');
+			})
+			.on('end', () => {
+				console.log('Processing finished !');
+				convertedSongs.unshift(savePath);
+				console.log('Pushed path ' + id);
+				indexToConvert -=1;
+				convertToMp3(songs);
+			})
+			.save(savePath);//path where you want to save your file
+		} catch (error) {
+				console.log("Error in converting");
+				return merge(false);
+		}
 	}else{
 		console.log(format + ' ' + track + ' addded');
 		convertedSongs.push(track);
 		console.log('Pushed path ' + track);
 		indexToConvert -=1;
-		convertToMp3(songs,event);
+		convertToMp3(songs);
 	}
 }; 	
 
@@ -466,4 +498,56 @@ function analyseFormats(songs){
 		format:songs[0].match(/\..+/g)[0]
 	}
 	return data;
+}
+
+
+function mkNecessaryDirs(){
+	const dirs = [convertedDir,lyricsDir,mixesDir,lyricVids];
+	dirs.forEach(dir=>{
+	if (!fs.existsSync(dir)){
+		fs.mkdir(dir, function(err) {
+			if (err) {
+			  console.log(err)
+			} else {
+			  console.log(dir + " successfully created.")
+			}
+		})
+	}else{
+		console.log(dir + ' EXISTS');
+	}
+	})
+	console.log();
+}
+
+mkNecessaryDirs(); 
+
+async function saveMix(tags,event){
+	let file = path.join(appDataFolder,'fmixed.mp3');
+	let success = NodeID3.write(tags, file)
+	console.log(success);
+	if(success){
+		(async () => {
+			console.log(tags.title);
+			await moveFile(file, path.join(mixesDir,tags.title));
+			console.log('The file has been moved');
+			event.returnValue = 'success'
+		})();
+	}else{
+		event.returnValue = 'failed to move file'
+	}
+    console.log('The file has been moved');
+}
+
+function cleanUp(){
+const directory = convertedDir;
+
+fs.readdir(directory, (err, files) => {
+  if (err) throw err;
+
+  for (const file of files) {
+    fs.unlink(path.join(directory, file), err => {
+      if (err) throw err;
+    });
+  }
+});
 }
