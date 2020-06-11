@@ -104,6 +104,9 @@ export default {
                 scrollAmount = 0;
                 nextSong = document.querySelector('.toResumedFrom');
                 window.hasResumed == true
+                // if(document.querySelector('.toResumedFrom')){
+                //     document.querySelector('.toResumedFrom').classList.remove('toResumedFrom');
+                // }
             }
             else{
                 nextSong = document.querySelector('.playing').nextSibling;

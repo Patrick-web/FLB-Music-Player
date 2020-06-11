@@ -1,10 +1,12 @@
 <template>
   <div class="converter featurePage">
-      <h1>Video to Mp3</h1>
+      <h1 style="width:250px;">Video to Mp3</h1>
+      <p @click="closeConverter" id="closeMixer">Close Converter</p>
+
       <div class="grid2">
         <div class="functions">
             <div class="buttonn" @click="selectVideo" id="selectVideo">Select Video</div>
-            <video src=""></video>
+            <video id="video" controls src=""></video>
             <div class="buttonn" @click="convert" id="convertVideo">Convert</div>
         </div>
         <div class="converted">
@@ -47,10 +49,21 @@ export default {
         ]
     }},
     methods:{
+        closeConverter(){
+            document.body.classList.remove('showConverter');
+        },
         selectVideo(){
-
+            let data = electron.ipcRenderer.sendSync("pickVideo");
+            this.video = data;
+            console.log(this.video);
+            console.log(data);
+            if(data){
+                document.querySelector('#video').src = 'file://' +  data;
+            }
         },
         convert(){
+            let data = electron.ipcRenderer.sendSync("convertVideoToMp3", this.video);
+            console.log(data);
 
         }
     }
@@ -77,8 +90,9 @@ export default {
 }
 .converted{
     padding-top: 10px;
-    background: rgb(240, 240, 240);
+    // background: rgb(240, 240, 240);
     width: 70%;
+    min-width: 400px;
     height: 80%;
     margin: auto;
     margin-top: 10px;
@@ -87,8 +101,8 @@ export default {
         width: 50px;
     }
     .card-song{
-        background: white;
-        color: purple;
+        background: rgb(58, 2, 63);
+        color: rgb(255, 255, 255);
         display: flex;
         align-items: center;
         width: 80%;
@@ -97,7 +111,7 @@ export default {
         margin-top: 10px;
         margin-bottom: 10px;
         border-radius: 10px;
-        box-shadow: 2px 2px 5px rgba(128, 128, 128, 0.568);
+        box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.568);
         p{
             margin-left: 10px;
         }
@@ -112,7 +126,8 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: start;
+    padding-left: 20px;
 }
 .buttonn{
     width: 80%;
@@ -120,12 +135,14 @@ export default {
     border-radius: 5px;
     padding-top: 7px;
     padding-bottom: 7px;
+    margin-top: 60px;
+    margin-bottom: 60px;
     font-size: 1.4em;
     font-weight: 900;
     transition: 0.2s cubic-bezier(0.215, 0.610, 0.355, 1);
 }
 .buttonn:hover{
-    width: 90%;
+    border-radius: 30px;
     cursor: pointer;
 }
 #selectVideo{
@@ -134,5 +151,8 @@ export default {
 }
 #convertVideo{
     background: linear-gradient(90deg,orange,magenta);
+}
+video{
+    width: 550px;
 }
 </style>

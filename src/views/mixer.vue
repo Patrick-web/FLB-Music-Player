@@ -92,6 +92,7 @@ methods:{
         setTimeout(()=>{
             this.addSongToMix(index)
         },800) 
+        this.hideForm();
     },
     removeSongFromMix(e,index){
         const node = e.currentTarget.parentElement;
@@ -135,7 +136,7 @@ methods:{
     },
     async saveMix(){
         if(document.body.classList.contains('showMixForm')){
-            // this.h
+            this.hideForm();
             document.querySelector('#infoText').textContent = "Saving..."
             document.body.classList.add('currentlyMixing');
             try {
@@ -151,7 +152,7 @@ methods:{
                         document.body.classList.remove('currentlyMixing');
                     },1000)
                 }
-                console.log(this.tags);
+                this.songQueue.shift()   ;             
             } catch (error) {
             console.log(error);                                                        
             }

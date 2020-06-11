@@ -15,7 +15,6 @@ import { format } from 'util';
 const moveFile = require('move-file');
 const NodeID3 = require('node-id3');
 
-
 const appDataFolder = app.getPath('userData');
 const musicDir = app.getPath('music');
 const videosDir = app.getPath('videos');
@@ -23,6 +22,10 @@ const convertedDir = path.join(appDataFolder,'converted');
 const lyricsDir = path.join(appDataFolder,'lyrics');
 const mixesDir = path.join(musicDir,'flbMixes');
 const lyricVids = path.join(videosDir,'flbLyricVideos');
+const pth = path.join(appDataFolder, 'ffPaths.json');
+const paths = JSON.parse(fs.readFileSync(pth, "utf8"));
+ffmpeg.setFfmpegPath(paths.ffmpeg);
+ffmpeg.setFfprobePath(paths.ffprobe)
 
 let mergeEvent;
 
@@ -55,7 +58,7 @@ protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({width: 800, height: 600,autoHideMenuBar: true, webPreferences: {
+  win = new BrowserWindow({width: 800, height: 600, webPreferences: {
 	nodeIntegration: true,
 	webSecurity:false
   } })
@@ -171,6 +174,22 @@ ipcMain.on("readFile", (event, name) => {
 
 // 	event.returnValue = true;
 // });
+function parseVideo(video){
+	return new Promise((resolve, reject) => {
+		return ffmpeg.ffprobe(video, (error, videoInfo) => {
+		  if (error) {
+			return reject(error);
+		  }
+		  const { duration, size } = videoInfo.format;
+		  console.log(videoInfo.format);
+		  return resolve({
+			size,
+			durationInSeconds: Math.floor(duration),
+		  });
+		});
+	  });
+}
+
 
 async function parseFile(file, scanDir) {
 	let stat = fs.lstatSync(file);
@@ -317,6 +336,26 @@ ipcMain.on("pickSongs", async (event) => {
 	event.returnValue = output;
 });
 
+ipcMain.on("pickVideo", async (event) => {
+	let files = dialog.showOpenDialog({
+		title: "Select Video",
+		filters: [
+			{name: "Video (.mp4, .mkv,.webm)",
+			 extensions: ["mp4", "mkv","webm"]
+			}
+		],
+		properties: ["openFile"]
+	});
+
+	if (!files) {
+		event.returnValue = false;
+		return ;
+	}else{
+		event.returnValue = files[0];
+	}
+
+});
+
 // ipcMain.on("mixSongs", async (event,concatString) => {
 // 	exec(`ffmpeg -i 'concat:${concatString}' -acodec copy /home/x/Music/flbmixed.mp3`, (error, stdout, stderr) => {
 // 		if (error) {
@@ -338,13 +377,7 @@ ipcMain.on("mixSongs", async (event,songs) => {
 	mergeEvent = event
 	convertedSongs.length  = 0;
 	indexToConvert =  songs.length - 1;
-	const userData = app.getPath('userData');
-	const pth = path.join(userData, 'ffPaths.json');
-	// console.log(pth);
-	console.log(pth);
 	if (fs.existsSync(pth)) {
-		const paths = JSON.parse(fs.readFileSync(pth, "utf8"));
-		ffmpeg.setFfmpegPath(paths.ffmpeg);
 		const fdata = analyseFormats(songs);
 		if(fdata.notSame){
 			console.log("Converting first");
@@ -378,24 +411,35 @@ executes the below function
 	}
 });
 
-ipcMain.on("convertVideoToMp3", async (event,concatString) => {
+ipcMain.on("convertVideoToMp3", async (event,videoPath) => {
+	const output = path.join(videosDir,'toAudio.mp3');
+	const savePath = path.join(videosDir,'flbConvert.mp3'); 
+
 	function convert(input, output, callback) {
 		ffmpeg(input)
-			.output(output)
-			.on('end', function() {                    
-				console.log('conversion ended');
-				callback(null);
-			}).on('error', function(err){
-				console.log('error: ', e.code, e.msg);
-				callback(err);
-			}).run();
+			.toFormat('mp3')
+			.on('start', () => {
+				console.log('Starting conversion');
+			})
+			.on('error', (err) => {
+				console.log('An error occurred: ' + err.message);
+			})
+			.on('progress', (progress) => {
+				// console.log(JSON.stringify(progress));
+				console.log('Conveting: ' + progress.targetSize + ' KB converted');
+			})
+			.on('end', () => {
+				console.log('conversion to mp3 finished !');
+			})
+			.save(savePath);
+			event.returnValue = 'Something'
 	}
 	
-	convert('./df.mp4', './output.mp3', function(err){
+	convert(videoPath, output, function(err){
 	   if(!err) {
 		   console.log('conversion complete');
-		   //...
-	
+	   }else{
+		   console.log(err);
 	   }
 	});
 });
