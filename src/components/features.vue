@@ -31,6 +31,7 @@ export default {
         },
         showConverter(){
             document.body.classList.add('showConverter');
+            this.hideFeatures();
         }
     }
 

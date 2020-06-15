@@ -3,15 +3,15 @@
       <div class="menuShow"></div>
       <div @click="renderRecents" id="recent" class="icn">
           <img src="@/assets/clock.png" alt="">
-          <p  class="exp">Recents</p>
+          <p style="width:150px"  class="exp">Recently Played</p>
       </div>
       <div @click="showPlaylists" id="fav" class="icn">
           <img src="@/assets/favourite.svg" alt="">
-          <p class="exp">Playlists</p>
+          <p style="width:90px" class="exp">Playlists</p>
       </div>
       <div v-on:click="pickMusic(true)" id='folder' class="icn">
           <img src="@/assets/folder.png" alt="">
-          <p class="exp" style="width:150px">Add Music folder</p>
+          <p class="exp" style="width:160px">Add Music folder</p>
       </div>
       <div v-on:click="pickSongs(true)"  id='musicPlus' class="icn">
           <img src="@/assets/musicPlus.svg"  alt="">

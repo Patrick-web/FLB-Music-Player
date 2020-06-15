@@ -1,127 +1,139 @@
 <template>
-    <form class="form editForm">
-      <label for="">Edit Playlist</label>
-      <input id="edPlName"  class="inputElem" :value="playlist.name" type="text">
-      <p id="edPlIndex" style="display:none">{{index}}</p>
-      <button @click="saveEdit" id="editPlBT">Save</button>
-      <button @click="hideForm" id="hide">Cancel</button>
-    
+  <form class="form editForm">
+    <label for="">Edit Playlist</label>
+    <input id="edPlName" class="inputElem" :value="playlist.name" type="text" />
+    <p id="edPlIndex" style="display:none">{{ index }}</p>
+    <button @click="saveEdit" id="editPlBT">Save</button>
+    <button @click="hideForm" id="hide">Cancel</button>
+
     <div class="playListSongs">
-        <div :key="song.title" v-for="(song) in playlist.songs" class="psong animated faster">
-            <p> {{song.title}} </p>
-            <div @click="queueToRemove($event,song.id)" class="removeBt">
-                <p>Remove</p>
-                <img src="@/assets/trash.png" alt="">
-            </div>
+      <div
+        :key="song.title"
+        v-for="song in playlist.songs"
+        class="psong animated extrafaster"
+      >
+        <p>{{ song.title }}</p>
+        <div @click="queueToRemove($event, song.id)" class="removeBt">
+          <p>Remove</p>
+          <img src="@/assets/trash.png" alt="" />
         </div>
-  
+      </div>
     </div>
-    </form>
+  </form>
 </template>
 
 <script>
-import {mapActions} from 'vuex';
+import { mapActions } from "vuex";
 
 export default {
-    data(){return{
-        IDofSongsToRemove:[]
-    }},
-    methods:{
-        ...mapActions(['editPlaylist']),
-        queueToRemove(e,id){
-            const target = e.currentTarget.parentElement;
-            target.classList.add('fadeOutRight');
-            setTimeout(()=>{
-                target.remove()
-            },1000) 
-            this.IDofSongsToRemove.push(id);
-        },
-        hideForm(){
-            document.body.classList.remove('showEditForm');
-        },
-        saveEdit(){
-            const plIndex = document.querySelector('#edPlIndex').textContent;
-            const plName =  document.querySelector('#edPlName').value;
-            console.log(plName);
-            const sTargets = this.IDofSongsToRemove
-
-            const data = {
-                plIndex,
-                plName,
-                sTargets
-            }
-            this.editPlaylist(data);
-            document.body.classList.remove('showEditForm');
-        }
+  data() {
+    return {
+      IDofSongsToRemove: [],
+    };
+  },
+  methods: {
+    ...mapActions(["editPlaylist"]),
+    queueToRemove(e, id) {
+      const target = e.currentTarget.parentElement;
+      target.classList.add("fadeOutRight");
+      setTimeout(() => {
+        target.classList.add("hideMe");
+      }, 200);
+      this.IDofSongsToRemove.push(id);
     },
-    props:{
-        playlist:Object,
-        index:Number
-    }
-}
+    hideForm() {
+      document.body.classList.remove("showEditForm");
+      const hidden = document.querySelectorAll(".hideMe");
+      hidden.forEach((hid) => {
+        hid.classList.remove("fadeOutRight");
+        hid.classList.remove("hideMe");
+      });
+    },
+    saveEdit() {
+      const plIndex = document.querySelector("#edPlIndex").textContent;
+      const plName = document.querySelector("#edPlName").value;
+      console.log(plName);
+      const sTargets = this.IDofSongsToRemove;
+
+      const data = {
+        plIndex,
+        plName,
+        sTargets,
+      };
+      this.editPlaylist(data);
+      document.body.classList.remove("showEditForm");
+    },
+  },
+  props: {
+    playlist: Object,
+    index: Number,
+  },
+};
 </script>
 
 <style lang="scss">
-.showEditForm{
-    .editForm{
-        transform: scale(1) translate(-50%,-50%);
-        top:40%;
-    }
+.hideMe {
+  display: none;
 }
-.editForm{
-    position: fixed;
-    top:-100%;
-    left: 45%;
-    transform: scale(0) translateX(-50%);
-    transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.showEditForm {
+  .editForm {
+    transform: scale(1) translate(-50%, -50%);
+    top: 40%;
+  }
 }
-.form{
-    overflow-y: scroll;
-    max-height: 500px;
-    max-width: 500px;
-    #editPlBT,#hide{
-        width: 220px;
-    }
-    #hide{
-        background: rgb(255, 0, 119);
-    }
-
+.editForm {
+  position: fixed;
+  top: -100%;
+  left: 45%;
+  transform: scale(0) translateX(-50%);
+  transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.playListSongs{
+.form {
+  overflow-y: scroll;
+  max-height: 500px;
+  max-width: 500px;
+  #editPlBT,
+  #hide {
+    width: 220px;
+  }
+  #hide {
+    background: rgb(255, 0, 119);
+  }
+}
+.playListSongs {
+  padding: 2px;
+  .psong {
+    background: rgba(255, 255, 255, 0.041);
+    padding: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.39);
+  }
+  .removeBt {
+    margin-top: 5px;
+    display: block;
+    background: rgba(255, 53, 53, 0.205);
+    width: 100px;
+    display: flex;
     padding: 2px;
-    .psong{
-        background: rgba(255, 255, 255, 0.041);
-        padding: 5px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.39);
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 5px;
+    img {
+      width: 22px;
+      height: 22px;
+      transition: 0.2s;
     }
-    .removeBt{
-        margin-top: 5px;
-        display: block;
-        background: rgba(255, 53, 53, 0.205);
-        width: 100px;
-        display: flex;
-        padding: 2px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        padding-left: 5px;
-        padding-right: 5px;
-        align-items: center;
-        justify-content: space-between;
-        border-radius: 5px;
-        img{
-            width: 22px;
-            height: 22px;
-            transition: 0.2s;
-        }
+  }
+  .removeBt:hover {
+    cursor: pointer;
+    img {
+      width: 27px;
+      height: 27px;
+      cursor: pointer;
     }
-    .removeBt:hover{
-        cursor: pointer;
-        img{
-            width: 27px;
-            height: 27px;
-            cursor: pointer;
-        }
-    }
+  }
 }
-
 </style>

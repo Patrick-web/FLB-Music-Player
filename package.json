@@ -13,6 +13,7 @@
   "main": "background.js",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@typopro/web-titillium": "^3.7.5",
     "core-js": "^3.6.4",
     "dataurl": "^0.1.0",
     "ffbinaries": "^1.1.4",
@@ -28,6 +29,7 @@
     "sass-loader": "^8.0.2",
     "simplex-noise": "^2.4.0",
     "three": "^0.116.1",
+    "typeface-roboto": "0.0.75",
     "uuidv4": "^6.0.6",
     "vue": "^2.6.11",
     "vue-kinesis": "^1.1.5",
