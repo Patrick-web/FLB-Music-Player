@@ -48,12 +48,16 @@
             <label for="album">Album</label>
             <input type="text" class="inputElem" value="F Mixes" id="album" />
           </div>
-          <div class="albArt">
+          <!-- <div class="albArt">
             <img id="albArt" src="@/assets/poster.png" alt />
-            <div style="text-align:center;font-weight:600" id="selectPoster">
+            <div
+              @click="showDialog"
+              style="text-align:center;font-weight:600"
+              id="selectPoster"
+            >
               Select Album art
             </div>
-          </div>
+          </div> -->
         </form>
       </div>
 
@@ -88,11 +92,19 @@ export default {
         album: "FLB release",
         APIC: "/img/poster.e5b0f5a2.png",
       },
+      customAlbumArt: false,
     };
   },
   computed: mapGetters(["songsToMix", "selectedToMix", "songQueue"]),
   methods: {
     ...mapActions(["addSongToMix", "unMix", "showNotification"]),
+    async showDialog() {
+      let pic = await electron.ipcRenderer.sendSync("pickPicture");
+      if (pic) {
+        document.querySelector("#albArt").src = "file://" + pic;
+        this.customAlbumArt = "file://" + pic;
+      }
+    },
     mix(e, index) {
       const card = e.currentTarget;
       card.classList.add("bounceOutDown");
@@ -136,7 +148,7 @@ export default {
         title: document.querySelector("#mixname").value,
         artist: document.querySelector("#artist").value,
         album: document.querySelector("#album").value,
-        APIC: document.querySelector("#albArt").src,
+        APIC: this.customAlbumArt,
       };
       return tags;
     },

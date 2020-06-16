@@ -30,6 +30,7 @@ const pth = path.join(appDataFolder, "ffPaths.json");
 const paths = JSON.parse(fs.readFileSync(pth, "utf8"));
 ffmpeg.setFfmpegPath(paths.ffmpeg);
 ffmpeg.setFfprobePath(paths.ffprobe);
+const defaultPoster = path.join(__dirname, "../src/assets/poster.png");
 
 let mergeEvent;
 let processProgress;
@@ -323,6 +324,28 @@ ipcMain.on("pickSongs", async (event) => {
   event.returnValue = output;
 });
 
+ipcMain.on("pickPicture", async (event) => {
+  let files = dialog.showOpenDialog({
+    title: "Select Picture",
+    filters: [
+      {
+        name: "Image (.jpeg, .png, .jpg)",
+        extensions: ["jpeg", "png", "jpg"],
+      },
+    ],
+    properties: ["openFile"],
+    // properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
+  });
+
+  if (!files) {
+    event.returnValue = false;
+    return null;
+  } else {
+    console.log(files[0]);
+    event.returnValue = files[0];
+  }
+});
+
 ipcMain.on("pickVideo", async (event) => {
   let files = dialog.showOpenDialog({
     title: "Select Video",
@@ -573,6 +596,9 @@ mkNecessaryDirs();
 
 async function saveMix(tags, event) {
   let file = path.join(appDataFolder, "fmixed.mp3");
+  console.log(tags);
+  if (!tags.APIC) tags.APIC = defaultPoster;
+  console.log(tags);
   let success = NodeID3.write(tags, file);
   console.log(success);
   if (success) {

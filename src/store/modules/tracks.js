@@ -23,8 +23,8 @@ const actions = {
     if (data.error) {
       document.body.classList.add("error-notification");
     } else {
-      if (document.body.classList.contains("success-notification")) {
-        document.body.classList.remove("success-notification");
+      if (document.body.classList.contains("error-notification")) {
+        document.body.classList.remove("error-notification");
       }
     }
     document.querySelector(".not-title").textContent = data.title;
