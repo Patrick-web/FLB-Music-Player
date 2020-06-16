@@ -137,40 +137,40 @@ if (isDevelopment) {
   }
 }
 
-ipcMain.on("loadMusic", (e) => {
-  console.log("laodding sound");
-});
+// ipcMain.on("loadMusic", (e) => {
+//   console.log("laodding sound");
+// });
 
-function readSound(location) {
-  const pm = new Promise((resolve, reject) => {
-    fs.readFile(location, (err, data) => {
-      if (err) {
-        reject(err);
-      }
-      console.log(data);
-      resolve(dataUrl.convert({ data, mimetype: mimeTypes.lookup(location) }));
-    });
-  });
+// function readSound(location) {
+//   const pm = new Promise((resolve, reject) => {
+//     fs.readFile(location, (err, data) => {
+//       if (err) {
+//         reject(err);
+//       }
+//       console.log(data);
+//       resolve(dataUrl.convert({ data, mimetype: mimeTypes.lookup(location) }));
+//     });
+//   });
 
-  return pm;
-}
+//   return pm;
+// }
 
-ipcMain.on("readSound", (event, location) => {
-  readSound(location).then((url) => {
-    event.sender.send("soundLoaded", url);
-  });
-});
+// ipcMain.on("readSound", (event, location) => {
+//   readSound(location).then((url) => {
+//     event.sender.send("soundLoaded", url);
+//   });
+// });
 
-ipcMain.on("readFile", (event, name) => {
-  const userData = app.getPath("userData");
-  const pth = path.join(userData, name);
+// ipcMain.on("readFile", (event, name) => {
+//   const userData = app.getPath("userData");
+//   const pth = path.join(userData, name);
 
-  if (fs.existsSync(pth)) {
-    event.returnValue = fs.readFileSync(pth, "utf8");
-  } else {
-    event.returnValue = null;
-  }
-});
+//   if (fs.existsSync(pth)) {
+//     event.returnValue = fs.readFileSync(pth, "utf8");
+//   } else {
+//     event.returnValue = null;
+//   }
+// });
 
 async function parseFile(file, scanDir) {
   let stat = fs.lstatSync(file);
@@ -204,7 +204,7 @@ async function parseFile(file, scanDir) {
         .join("."),
     };
 
-    if (ext == ".mp3" || ext == ".mp3") {
+    if (ext == ".mp3" || ext == ".m4a") {
       out.tags = await mm.parseFile(file, { native: true });
     }
 
@@ -300,8 +300,8 @@ ipcMain.on("pickSongs", async (event) => {
     title: "Add songs",
     filters: [
       {
-        name: "Sound (.mp3, .wav, .ogg, .mp3)",
-        extensions: ["mp3", "wav", "ogg", "mp3"],
+        name: "Sound (.mp3, .wav, .ogg, .m4a)",
+        extensions: ["mp3", "wav", "ogg", "m4a"],
       },
     ],
     properties: ["multiSelections", "openFile"],

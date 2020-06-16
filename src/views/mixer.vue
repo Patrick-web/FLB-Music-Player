@@ -27,15 +27,26 @@
         <form id="mixForm">
           <div class="form-group">
             <label for="mixname">Mix Title</label>
-            <input type="text" value="FLB Mix" name id="mixname" />
+            <input
+              type="text"
+              class="inputElem"
+              value="FLB Mix"
+              name
+              id="mixname"
+            />
           </div>
           <div class="form-group">
             <label for="artist">Artist</label>
-            <input type="text" value="FLB player" id="artist" />
+            <input
+              type="text"
+              class="inputElem"
+              value="FLB player"
+              id="artist"
+            />
           </div>
           <div class="form-group">
             <label for="album">Album</label>
-            <input type="text" value="F Mixes" id="album" />
+            <input type="text" class="inputElem" value="F Mixes" id="album" />
           </div>
           <div class="albArt">
             <img id="albArt" src="@/assets/poster.png" alt />
