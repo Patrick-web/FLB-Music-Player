@@ -73,6 +73,7 @@ function createWindow() {
       nodeIntegration: true,
       webSecurity: false,
     },
+    autoHideMenuBar: true,
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
