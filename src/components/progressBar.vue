@@ -26,7 +26,7 @@ export default {};
   .innerBar {
     background: rgb(226, 0, 226);
     height: 0%;
-    transition: ease;
+    transition: 0.2s ease-in-out;
   }
 }
 </style>

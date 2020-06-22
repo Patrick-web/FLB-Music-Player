@@ -6,11 +6,15 @@ import {
   installVueDevtools,
 } from "vue-cli-plugin-electron-builder/lib";
 import * as mm from "music-metadata";
+import * as dataUrl from "dataurl";
+import * as mimeTypes from "mime-types";
 import * as fs from "fs";
 import * as path from "path";
+const os = require("os");
 import * as ffbinaries from "ffbinaries";
 const ffmpeg = require("fluent-ffmpeg");
 import { uuid } from "uuidv4";
+import { format } from "util";
 const moveFile = require("move-file");
 const NodeID3 = require("node-id3");
 
@@ -22,28 +26,46 @@ const convertedDir = path.join(appDataFolder, "converted");
 const lyricsDir = path.join(appDataFolder, "lyrics");
 const mixesDir = path.join(musicDir, "flbMixes");
 const lyricVids = path.join(videosDir, "flbLyricVideos");
-const ffpths = path.join(appDataFolder, "ffPaths.json");
-if (fs.existsSync(path.join(appDataFolder, "ffmpeg"))) {
-  const pths = JSON.parse(fs.readFileSync(ffpths, "utf8"));
-  ffmpeg.setFfmpegPath(pths.ffmpeg);
-  ffmpeg.setFfprobePath(pths.ffprobe);
-}
+const pth = path.join(appDataFolder, "ffPaths.json");
+const paths = JSON.parse(fs.readFileSync(pth, "utf8"));
+ffmpeg.setFfmpegPath(paths.ffmpeg);
+ffmpeg.setFfprobePath(paths.ffprobe);
+const defaultPoster = path.join(__dirname, "../src/assets/poster.png");
+
+let mergeEvent;
 let processProgress;
 let indexToConvert = 0;
 let mixDuration;
 const convertedSongs = [];
-let win;
+
+function getBinaries(callback) {
+  var platform = ffbinaries.detectPlatform();
+
+  return ffbinaries.downloadFiles(
+    ["ffmpeg", "ffprobe"],
+    { platform: platform, quiet: true, destination: os.homedir() },
+    function(err, data) {
+      console.log("Downloading binaries for " + platform + ":");
+      console.log("err", err);
+      //   console.log('data', data);
+      return callback(err, data);
+    }
+  );
+}
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-init();
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let win;
 
+// Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
 ]);
-const defaultPoster = path.join(__static, "icon.png");
-console.log(defaultPoster);
+
 function createWindow() {
+  // Create the browser window.
   win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -52,13 +74,15 @@ function createWindow() {
       webSecurity: false,
     },
     autoHideMenuBar: true,
-    icon: path.join(__static, "icon.png"),
   });
+
   if (process.env.WEBPACK_DEV_SERVER_URL) {
+    // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     createProtocol("app");
+    // Load the index.html when not in development
     win.loadURL("app://./index.html");
   }
   win.maximize();
@@ -68,18 +92,26 @@ function createWindow() {
   });
 }
 
+// Quit when all windows are closed.
 app.on("window-all-closed", () => {
+  // On macOS it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
 app.on("activate", () => {
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
   if (win === null) {
     createWindow();
   }
 });
 
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
@@ -106,6 +138,41 @@ if (isDevelopment) {
     });
   }
 }
+
+// ipcMain.on("loadMusic", (e) => {
+//   console.log("laodding sound");
+// });
+
+// function readSound(location) {
+//   const pm = new Promise((resolve, reject) => {
+//     fs.readFile(location, (err, data) => {
+//       if (err) {
+//         reject(err);
+//       }
+//       console.log(data);
+//       resolve(dataUrl.convert({ data, mimetype: mimeTypes.lookup(location) }));
+//     });
+//   });
+
+//   return pm;
+// }
+
+// ipcMain.on("readSound", (event, location) => {
+//   readSound(location).then((url) => {
+//     event.sender.send("soundLoaded", url);
+//   });
+// });
+
+// ipcMain.on("readFile", (event, name) => {
+//   const userData = app.getPath("userData");
+//   const pth = path.join(userData, name);
+
+//   if (fs.existsSync(pth)) {
+//     event.returnValue = fs.readFileSync(pth, "utf8");
+//   } else {
+//     event.returnValue = null;
+//   }
+// });
 
 async function parseFile(file, scanDir) {
   let stat = fs.lstatSync(file);
@@ -150,47 +217,55 @@ async function parseFile(file, scanDir) {
 ipcMain.on("saveAddedSongs", (event, json) => {
   const fileName = "flb_songs.json";
   const content = json;
-  fs.writeFileSync(path.join(appDataFolder, fileName), content);
+  const userData = app.getPath("userData");
+  fs.writeFileSync(path.join(userData, fileName), content);
   event.returnValue = true;
-});
-ipcMain.on("getPreviouslyAdded", (event) => {
-  const pth = path.join(appDataFolder, "flb_songs.json");
-  if (fs.existsSync(pth)) {
-    const prevAdded = fs.readFileSync(pth, "utf8");
-    event.returnValue = prevAdded;
-  } else {
-    event.returnValue = false;
-  }
 });
 ipcMain.on("savePlaylists", (event, json) => {
   const fileName = "flb_playlists.json";
   const content = json;
-  fs.writeFileSync(path.join(appDataFolder, fileName), content);
+  const userData = app.getPath("userData");
+  fs.writeFileSync(path.join(userData, fileName), content);
   // event.returnValue = true;
 });
 ipcMain.on("saveRecentSongs", (event, json) => {
   const fileName = "flb_recents.json";
   const content = json;
-  fs.writeFileSync(path.join(appDataFolder, fileName), content);
+  const userData = app.getPath("userData");
+  fs.writeFileSync(path.join(userData, fileName), content);
   // event.returnValue = true;
 });
 
-ipcMain.on("getPlaylists", (event) => {
-  const pth = path.join(appDataFolder, "flb_playlists.json");
-  if (fs.existsSync(pth)) {
-    event.returnValue = fs.readFileSync(pth, "utf8");
-  } else {
-    event.returnValue = [];
-  }
-});
-
-ipcMain.on("getRecents", (event) => {
-  const pth = path.join(appDataFolder, "flb_recents.json");
+ipcMain.on("getSongs", (event) => {
+  const userData = app.getPath("userData");
+  const pth = path.join(userData, "flb_songs.json");
   // console.log(pth);
   if (fs.existsSync(pth)) {
     event.returnValue = fs.readFileSync(pth, "utf8");
   } else {
-    event.returnValue = false;
+    event.returnValue = null;
+  }
+});
+
+ipcMain.on("getPlaylists", (event) => {
+  const userData = app.getPath("userData");
+  const pth = path.join(userData, "flb_playlists.json");
+  // console.log(pth);
+  if (fs.existsSync(pth)) {
+    event.returnValue = fs.readFileSync(pth, "utf8");
+  } else {
+    event.returnValue = null;
+  }
+});
+
+ipcMain.on("getRecents", (event) => {
+  const userData = app.getPath("userData");
+  const pth = path.join(userData, "flb_recents.json");
+  // console.log(pth);
+  if (fs.existsSync(pth)) {
+    event.returnValue = fs.readFileSync(pth, "utf8");
+  } else {
+    event.returnValue = null;
   }
 });
 
@@ -200,9 +275,11 @@ ipcMain.on("pickMusic", async (event) => {
     filters: [
       {
         name: "Sound (.mp3, .wav, .ogg, .m4a)",
+        //  extensions: ["mp3", "wav", "ogg","mp3"]
       },
     ],
     properties: ["openDirectory"],
+    // properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
   });
 
   if (!files) {
@@ -230,6 +307,7 @@ ipcMain.on("pickSongs", async (event) => {
       },
     ],
     properties: ["multiSelections", "openFile"],
+    // properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
   });
 
   if (!files) {
@@ -245,6 +323,28 @@ ipcMain.on("pickSongs", async (event) => {
   }
 
   event.returnValue = output;
+});
+
+ipcMain.on("pickPicture", async (event) => {
+  let files = dialog.showOpenDialog({
+    title: "Select Picture",
+    filters: [
+      {
+        name: "Image (.jpeg, .png, .jpg)",
+        extensions: ["jpeg", "png", "jpg"],
+      },
+    ],
+    properties: ["openFile"],
+    // properties: ["multiSelections", folder ? "openDirectory" : "openFile"]
+  });
+
+  if (!files) {
+    event.returnValue = false;
+    return null;
+  } else {
+    console.log(files[0]);
+    event.returnValue = files[0];
+  }
 });
 
 ipcMain.on("pickVideo", async (event) => {
@@ -272,9 +372,10 @@ ipcMain.on("saveMix", async (event, tags) => {
 });
 
 ipcMain.on("mixSongs", async (event, songs) => {
+  mergeEvent = event;
   convertedSongs.length = 0;
   indexToConvert = songs.length - 1;
-  if (fs.existsSync(ffpths)) {
+  if (fs.existsSync(pth)) {
     const fdata = analyseFormats(songs);
     if (fdata.notSame) {
       console.log("Converting first");
@@ -284,8 +385,30 @@ ipcMain.on("mixSongs", async (event, songs) => {
       merge(songs, event);
     }
   } else {
-    win.webContents.send("promptInternet");
-    console.log("Telling user to turn on internet");
+    /* tell user to turn on internet connnetion
+in order to download ffmpeg and this provide a button that
+executes the below function
+*/
+    getBinaries(function(err, data) {
+      if (err) {
+        console.log("Downloads failed.");
+      } else {
+        const fileName = "ffPaths.json";
+        const content = {
+          ffmpeg: data[0].path + "/ffmpeg",
+          ffprobe: data[1].path + "/ffprobe",
+        };
+        const userData = app.getPath("userData");
+        console.log(JSON.stringify(content));
+        fs.writeFileSync(
+          path.join(userData, fileName),
+          JSON.stringify(content)
+        );
+        console.log("Downloads successful.");
+      }
+    });
+
+    event.returnValue = null;
   }
 });
 
@@ -294,19 +417,13 @@ ipcMain.on("convertVideoToMp3", async (event, videoPath) => {
     .replace(/^.*[\\\/]/, "")
     .replace(/\.[0-9a-z]+$/i, "");
   const output = path.join(toMp3Dir, filename);
+
   convertVideoToMp3(videoPath, output, event, filename);
 });
 
 ipcMain.on("getProgress", (event) => {
   console.log("Getting progress");
   sendProgress(event);
-});
-ipcMain.on("downloadBinaries", () => {
-  console.log("Deciding on bins");
-  console.log(fs.existsSync(path.join(appDataFolder, "ffPaths.json")));
-  if (!fs.existsSync(path.join(appDataFolder, "ffPaths.json"))) {
-    getBinaries();
-  }
 });
 
 async function getTotalDurationOfMix(songs) {
@@ -318,7 +435,7 @@ async function getTotalDurationOfMix(songs) {
   }
   mixDuration = Math.floor(totalDuration);
 }
-function convertToTimestamp(string) {
+function getTimestampFormat(string) {
   let hours = parseInt(string.substr(1, 2));
   let minutes = parseInt(string.substr(4, 2));
   let seconds = parseInt(string.substr(7, 4));
@@ -327,40 +444,47 @@ function convertToTimestamp(string) {
 }
 
 function merge(songs, event) {
-  console.log(songs);
-  getTotalDurationOfMix(songs);
+  if (!songs) {
+    event.returnValue = false;
+  } else {
+    getTotalDurationOfMix(songs);
+    const command = ffmpeg();
 
-  const command = ffmpeg();
-  songs.forEach((song) => {
-    command.input(song);
-  });
-  console.log("Merger started");
-  command
-    .on("start", function(data) {
-      console.log("start data is  " + data);
-    })
-    .on("error", function(err) {
-      console.log("An error occurred: " + err.message);
-      win.webContents.send("mixingError");
-    })
-    .on("progress", (progress) => {
-      console.log("Merging...");
-      let currentTime = convertToTimestamp(JSON.stringify(progress.timemark));
-      const percent = (currentTime * 100) / mixDuration;
-      win.webContents.send("progress", Math.floor(percent));
-    })
-    .on("end", async () => {
-      console.log("Merging finished !");
-      const tempMix = await mm.parseFile(`${appDataFolder}/fmixed.mp3`, {
-        native: true,
-      });
-      win.webContents.send("draftMixSaved", {
-        mixData: tempMix,
-        mixPath: `${appDataFolder}/fmixed.mp3`,
-      });
-      cleanUp();
-    })
-    .mergeToFile(`${appDataFolder}/fmixed.mp3`, appDataFolder);
+    songs.forEach((song) => {
+      command.input(song);
+    });
+    console.log("Merger started");
+    command
+      .on("start", function(data) {
+        console.log("start data is  " + data);
+      })
+      .on("error", function(err) {
+        console.log("An error occurred: " + err.message);
+        win.webContents.send("mixingError");
+      })
+      .on("progress", (progress) => {
+        console.log("Merging...");
+        let currentTime = getTimestampFormat(JSON.stringify(progress.timemark));
+        console.log(mixDuration);
+        console.log(currentTime);
+        const percent = (currentTime * 100) / mixDuration;
+        // console.log(percent);
+        win.webContents.send("progress", Math.floor(percent));
+      })
+      .on("end", async () => {
+        console.log("Merging finished !");
+        console.log("Event is " + mergeEvent);
+        const tempMix = await mm.parseFile(`${appDataFolder}/fmixed.mp3`, {
+          native: true,
+        });
+        win.webContents.send("draftMixSaved", {
+          mixData: tempMix,
+          mixPath: `${appDataFolder}/fmixed.mp3`,
+        });
+        cleanUp();
+      })
+      .mergeToFile(`${appDataFolder}/fmixed.mp3`, appDataFolder);
+  }
 }
 
 function convertToMp3(songs) {
@@ -407,7 +531,6 @@ function convertToMp3(songs) {
 }
 
 async function convertVideoToMp3(input, output, event, songTitle) {
-  console.log(input);
   ffmpeg(input)
     .toFormat("mp3")
     .on("start", () => {
@@ -464,26 +587,20 @@ function mkNecessaryDirs() {
         }
       });
     } else {
-      // const fNames = [
-      //   "flb_recents.json",
-      //   "flb_songs.json",
-      //   "flb_playlists.json",
-      // ];
-      // const content = "";
-      // fNames.forEach((file) => {
-      //   fs.writeFileSync(path.join(appDataFolder, file), content);
-      // });
+      console.log(dir + " EXISTS");
     }
   });
+  console.log();
 }
 
 mkNecessaryDirs();
 
 async function saveMix(tags, event) {
-  const mp3Tags = tags;
-  mp3Tags.APIC = defaultPoster;
   let file = path.join(appDataFolder, "fmixed.mp3");
-  let success = NodeID3.write(mp3Tags, file);
+  console.log(tags);
+  if (!tags.APIC) tags.APIC = defaultPoster;
+  console.log(tags);
+  let success = NodeID3.write(tags, file);
   console.log(success);
   if (success) {
     (async () => {
@@ -523,58 +640,4 @@ function cleanUp() {
 function sendProgress(event) {
   console.log("Progress pinged");
   event.returnValue = processProgress;
-}
-
-function init() {
-  console.log(ffpths);
-  fs.access(ffpths, fs.F_OK, (err) => {
-    if (err) {
-      console.log("Binaries DO NOT EXIST");
-      getBinaries();
-    } else {
-      console.log("Binaries EXIST");
-      const paths = JSON.parse(fs.readFileSync(ffpths, "utf8"));
-      ffmpeg.setFfmpegPath = paths.ffmpeg;
-      ffmpeg.setFfprobePath = paths.ffprobe;
-      console.log(paths.ffmpeg);
-    }
-
-    //file exists
-  });
-}
-function getBinaries() {
-  var platform = ffbinaries.detectPlatform();
-
-  return ffbinaries.downloadFiles(
-    ["ffmpeg", "ffprobe"],
-    { platform: platform, quiet: true, destination: appDataFolder },
-    function(err, data) {
-      console.log("Downloading binaries for " + platform + ":");
-      console.log("err", err);
-      console.log("The data from downloading bins is ", data);
-      saveBinaryPaths(err, data);
-    }
-  );
-}
-function saveBinaryPaths(err, data) {
-  if (err) {
-    console.log("Downloads failed.");
-  } else {
-    const fileName = "ffPaths.json";
-    const ffmpegPath = path.join(appDataFolder, "ffmpeg");
-    const ffprobePath = path.join(appDataFolder, "ffprobe");
-
-    const content = {
-      ffmpeg: ffmpegPath,
-      ffprobe: ffprobePath,
-    };
-    fs.writeFileSync(
-      path.join(appDataFolder, fileName),
-      JSON.stringify(content)
-    );
-    console.log("Downloads successful.");
-
-    ffmpeg.setFfmpegPath(ffmpegPath);
-    ffmpeg.setFfprobePath(ffprobePath);
-  }
 }

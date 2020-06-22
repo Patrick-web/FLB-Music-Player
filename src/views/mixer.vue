@@ -48,16 +48,10 @@
             <label for="album">Album</label>
             <input type="text" class="inputElem" value="F Mixes" id="album" />
           </div>
-          <!-- <div class="albArt">
+          <div class="albArt">
             <img id="albArt" src="@/assets/poster.png" alt />
-            <div
-              @click="showDialog"
-              style="text-align:center;font-weight:600"
-              id="selectPoster"
-            >
-              Select Album art
-            </div>
-          </div> -->
+            <!-- <div style="text-align:center;font-weight:600" id="selectPoster">Select Album art</div> -->
+          </div>
         </form>
       </div>
 
@@ -92,19 +86,11 @@ export default {
         album: "FLB release",
         APIC: "/img/poster.e5b0f5a2.png",
       },
-      customAlbumArt: false,
     };
   },
   computed: mapGetters(["songsToMix", "selectedToMix", "songQueue"]),
   methods: {
     ...mapActions(["addSongToMix", "unMix", "showNotification"]),
-    async showDialog() {
-      let pic = await electron.ipcRenderer.sendSync("pickPicture");
-      if (pic) {
-        document.querySelector("#albArt").src = "file://" + pic;
-        this.customAlbumArt = "file://" + pic;
-      }
-    },
     mix(e, index) {
       const card = e.currentTarget;
       card.classList.add("bounceOutDown");
@@ -148,7 +134,7 @@ export default {
         title: document.querySelector("#mixname").value,
         artist: document.querySelector("#artist").value,
         album: document.querySelector("#album").value,
-        APIC: this.customAlbumArt,
+        APIC: document.querySelector("#albArt").src,
       };
       return tags;
     },
@@ -226,8 +212,9 @@ export default {
       this.showNotification({
         error: false,
         title: "Sucess",
-        body: `Mix saved`,
+        body: `Mix saved to Music/flbMixes Folder`,
       });
+      document.querySelector(".innerBar").height = "0%";
     });
     electron.ipcRenderer.on("mixSaveError", (e) => {
       this.showNotification({
@@ -251,6 +238,13 @@ export default {
         error: false,
         title: "Done",
         body: `Draft mix created`,
+      });
+    });
+    electron.ipcRenderer.on("promptInternet", (e) => {
+      this.showNotification({
+        error: true,
+        title: "Error",
+        body: `Please turn on internet connection to download files required to use this feature`,
       });
     });
   },
@@ -531,8 +525,9 @@ export default {
       }
       .albArt {
         margin-top: 10px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        // display: grid;
+        // grid-template-columns: 1fr 1fr;
         justify-content: center;
         align-items: center;
       }

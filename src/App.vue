@@ -1,14 +1,33 @@
 <template>
   <div class="wrapper">
     <img class="animated faster" src="@/assets/splash.svg" id="splash" alt />
-    <img
-      src="@/assets/logo.svg"
-      style="transform:scale(0.6);position:fixed;top:-5px;left:-5px"
-      alt
-    />
+    <img src="@/assets/logo.svg" id="flbLogo" @click="toggleInfo" />
     <progressBar />
     <loading />
     <notification />
+    <div class="info-card">
+      <div class="gif"><img id="gif" src="@/assets/gif.gif" alt="" /></div>
+      <div class="infos">
+        <div class="info-group">
+          <div class="it">Creator</div>
+          <div class="i">Patrick Waweru</div>
+        </div>
+        <div class="info-group">
+          <div class="it">Twitter</div>
+          <div class="i">@PnTX10</div>
+        </div>
+        <div class="info-group">
+          <div class="it">Email</div>
+          <div class="i">pntx200@gmail</div>
+        </div>
+        <div class="info-group">
+          <div class="it">Github</div>
+          <div style="font-size:0.8em" class="i">
+            https://github.com/Patrick-web
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="mixingloader">
       <img
         id="mixLoader"
@@ -43,6 +62,7 @@ import player from "@/components/bottomControls.vue";
 import loading from "@/components/loading.vue";
 import progressBar from "@/components/progressBar.vue";
 import notification from "@/components/notification.vue";
+import * as electron from "electron";
 
 export default {
   data() {
@@ -82,18 +102,17 @@ export default {
         audio.currentTime += 5;
       }
     });
-
-    // var wavesurfer = WaveSurfer.create({
-    // container: '#waveform',
-    // waveColor: 'violet',
-    // progressColor: 'purple'
-    // });
-    // console.log(this.audioFile);
-    // wavesurfer.load(this.audioFile);
+    function getBinaries() {
+      electron.ipcRenderer.send("downloadBinaries");
+    }
+    window.addEventListener("online", getBinaries);
   },
   methods: {
     changeState() {
       this.isPlaying = !this.isPlaying;
+    },
+    toggleInfo() {
+      document.body.classList.toggle("showInfo");
     },
   },
   components: {
@@ -196,5 +215,66 @@ body {
   color: magenta;
   transition: 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform: scale(0);
+}
+.showInfo {
+  .info-card {
+    transform: scale(1) translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+  }
+  #flbLogo {
+    filter: invert(100%);
+  }
+}
+#flbLogo {
+  transform: scale(0.6);
+  position: fixed;
+  top: -5px;
+  left: -5px;
+  z-index: 10;
+}
+#flbLogo:hover {
+  cursor: pointer;
+}
+.info-card {
+  position: fixed;
+  z-index: 10;
+  top: -20%;
+  left: -15%;
+  transform: scale(0) translate(0%, 0%);
+  background: linear-gradient(150deg, rgb(0, 193, 207), rgb(0, 110, 255));
+  width: 330px;
+  height: 300px;
+  border-radius: 15px;
+  padding: 10px;
+  transition: 0.2s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+  .info-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    .it {
+      font-weight: 700;
+      font-size: 1.25em;
+    }
+    .i {
+      background: rgba(0, 0, 0, 0.226);
+      padding: 5px;
+      border-radius: 20px;
+    }
+    .i:hover {
+      cursor: default;
+    }
+  }
+}
+.gif {
+  text-align: center;
+  margin-top: -50px;
+}
+#gif {
+  width: 200px;
+  border-radius: 10px;
+  box-shadow: 4px 2px 10px rgba(8, 8, 8, 0.384);
 }
 </style>

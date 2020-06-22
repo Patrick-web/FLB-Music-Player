@@ -10,6 +10,7 @@
 export default {
   methods: {
     dismiss() {
+      document.querySelector(".innerBar").height = "0%";
       document.body.classList.remove("notifyUser");
       if (document.body.classList.contains("showInformer")) {
         document.body.classList.remove("showInformer");

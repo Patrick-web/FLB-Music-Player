@@ -2,11 +2,21 @@
   <div class="tracksView">
     <div class="tactions">
       <p id="playingType">Added</p>
-      <img id="backToAdded" @click="backToAddedSongs" src="@/assets/arrow.svg" alt="">
+      <img
+        id="backToAdded"
+        @click="backToAddedSongs"
+        src="@/assets/arrow.svg"
+        alt
+      />
     </div>
-    <navigation/>
+    <navigation />
 
-    <transition-group style="display:flex;flex-direction:column;align-items:flex-end"  name="slideIn" enter-active-class="animated fadeInRight" leave-active-class="animated fadeOutLeft">
+    <transition-group
+      style="display:flex;flex-direction:column;align-items:flex-end"
+      name="slideIn"
+      enter-active-class="animated fadeInRight"
+      leave-active-class="animated fadeOutLeft"
+    >
       <!-- <kinesis-container
       class="parent"
       :audio="audioFile"
@@ -20,11 +30,11 @@
       type="scale"
       :strength="30"
       :audioIndex="75"
-    > -->
+      >-->
       <card
-        :key='song.id'
-         v-for="(song,index) in songQueue"
-        :path="song.path" 
+        :key="song.id"
+        v-for="(song, index) in songQueue"
+        :path="song.path"
         :poster="song.poster"
         :songTitle="song.title"
         :duration="song.duration"
@@ -32,74 +42,82 @@
         :index="index"
       />
 
+      <!-- </kinesis-audio> -->
+      <!-- <card/> -->
+      <!-- <card/>
+    <card/>
+    <card/>
+    <card/>
+    <card/>
+      <card/>-->
 
-    <!-- </kinesis-audio> -->
-    <!-- <card/> -->
-    <!-- <card/>
-    <card/>
-    <card/>
-    <card/>
-    <card/>
-    <card/> -->
-
-  <!-- </kinesis-container> -->
+      <!-- </kinesis-container> -->
     </transition-group>
   </div>
 </template>
 
 <script>
-import {mapGetters,mapActions} from 'vuex';
-const songSrc = require('@/assets/song.mp3')
-import card from '@/components/card.vue'
-import navigation from '@/components/nav.vue'
-import * as electron from 'electron';
+import { mapGetters, mapActions } from "vuex";
+const songSrc = require("@/assets/song.mp3");
+import card from "@/components/card.vue";
+import navigation from "@/components/nav.vue";
+import * as electron from "electron";
 
 export default {
-  data(){return{
-    audioFile:songSrc,
-    isPlaying: false,
-    songs:[]
-  }},
-  computed:mapGetters(['songQueue']),
-  components:{
+  data() {
+    return {
+      audioFile: songSrc,
+      isPlaying: false,
+      songs: [],
+    };
+  },
+  computed: mapGetters(["songQueue"]),
+  components: {
     card,
-    navigation
+    navigation,
   },
   methods: {
-    ...mapActions(['renderSongsFromFolder','persistPreviouslyLoadedSongs','renderPreviouslyLoaded','loadRecents']),
+    ...mapActions([
+      "renderSongsFromFolder",
+      "persistPreviouslyLoadedSongs",
+      "renderPreviouslyLoaded",
+      "loadRecents",
+    ]),
 
-    backToAddedSongs(){
-        document.body.classList.remove('showBackArrow');
-        document.querySelector('#playingType').style.marginLeft = '0px'
-        this.renderSongsFromFolder();
-        document.querySelector('#playingType').textContent = 'Added'
+    backToAddedSongs() {
+      document.body.classList.remove("showBackArrow");
+      document.querySelector("#playingType").style.marginLeft = "0px";
+      this.renderSongsFromFolder();
+      document.querySelector("#playingType").textContent = "Added";
     },
   },
-  mounted(){
-    setTimeout(()=>{
-      const songsData = electron.ipcRenderer.sendSync("getSongs");
-      const recentsData = electron.ipcRenderer.sendSync("getRecents");
-      const recentSongs = JSON.parse(recentsData);
-      const prevSongs = JSON.parse(songsData);
-      if(recentSongs){
+  mounted() {
+    setTimeout(async () => {
+      const songsData = await electron.ipcRenderer.sendSync(
+        "getPreviouslyAdded"
+      );
+      const recentsData = await electron.ipcRenderer.sendSync("getRecents");
+      if (recentsData) {
+        const recentSongs = JSON.parse(recentsData);
         this.loadRecents(recentSongs);
       }
-      if(prevSongs != null){
+      if (songsData) {
+        const prevSongs = JSON.parse(songsData);
         this.persistPreviouslyLoadedSongs(prevSongs);
         this.renderPreviouslyLoaded(prevSongs);
       }
-    },500)
-  }
-}
+    }, 500);
+  },
+};
 </script>
 
-<style lang='scss'>
-.showBackArrow{
-    #backToAdded{
-      transform: scale(1) !important;
-    }
+<style lang="scss">
+.showBackArrow {
+  #backToAdded {
+    transform: scale(1) !important;
+  }
 }
-.tracksView{
+.tracksView {
   display: flex;
   align-items: flex-end;
   flex-direction: column;
@@ -109,33 +127,32 @@ export default {
   overflow: scroll;
   padding-bottom: 50px;
   scroll-behavior: smooth;
-  span{
+  span {
     width: 100%;
   }
-  .tactions{
+  .tactions {
     display: flex;
     justify-content: space-evenly;
     padding-top: 10px;
     align-items: center;
     width: 100%;
-    position:sticky;
+    position: sticky;
     font-size: 1.8em;
     font-weight: 900;
-    #backToAdded{
+    #backToAdded {
       margin-right: -100px;
       margin-left: -80px;
       width: 40px;
       transform: scale(0);
       transition: 0.1s cubic-bezier(0.075, 0.82, 0.165, 1);
     }
-    #backToAdded:hover{
+    #backToAdded:hover {
       cursor: pointer;
-      filter:sepia(100%);
+      filter: sepia(100%);
       transform: scale(1.1);
     }
   }
 }
-
 
 .parent {
   width: 100vw;
@@ -153,7 +170,7 @@ export default {
 }
 .button::before,
 .button::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
