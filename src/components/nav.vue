@@ -23,7 +23,7 @@
 <script>
 import { uuid } from "uuidv4";
 import * as electron from "electron";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   data() {
@@ -31,6 +31,7 @@ export default {
       songs: [],
     };
   },
+  computed: mapGetters(["addedSongs"]),
   methods: {
     ...mapActions([
       "persistFolderSongs",
@@ -101,7 +102,7 @@ export default {
     },
     saveFolderSongsToJson(songs) {
       console.log("Remembering");
-      const json = JSON.stringify(songs);
+      const json = JSON.stringify(this.addedSongs);
       const isSaved = electron.ipcRenderer.sendSync("saveAddedSongs", json);
       console.log(isSaved);
     },

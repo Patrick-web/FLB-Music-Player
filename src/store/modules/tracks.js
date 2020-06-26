@@ -15,6 +15,7 @@ const getters = {
   recents: (state) => state.recents,
   songsToMix: (state) => state.songsToMix,
   selectedToMix: (state) => state.selectedToMix,
+  addedSongs: (state) => state.addedSongs,
 };
 
 const actions = {
@@ -62,7 +63,7 @@ const actions = {
   },
   addNewPlaylist({ commit }, newPlaylist) {
     commit("addPlaylist", newPlaylist);
-    actions.savePlaylistsToFS();
+    // actions.savePlaylistsToFS();
   },
   deletePlaylist({ commit }, index) {
     commit("deletePlaylist", index);
@@ -127,7 +128,7 @@ const mutations = {
   renderSongsFromFolder: (state) => (state.songQueue = state.addedSongs),
 
   persistFolderSongs: (state, songs) =>
-    (state.addedSongs = unduplicate([...state.addedSongs, ...songs])),
+    (state.addedSongs = unduplicate([songs, state.addedSongs])),
 
   persistPreviouslyLoadedSongs: (state, songs) => (state.addedSongs = songs),
 

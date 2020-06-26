@@ -200,7 +200,6 @@ ipcMain.on("pickMusic", async (event) => {
     filters: [
       {
         name: "Sound (.mp3, .wav, .ogg, .m4a)",
-        extensions: ["mp3", "wav", "ogg", "m4a"],
       },
     ],
     properties: ["openDirectory"],
@@ -294,7 +293,7 @@ ipcMain.on("convertVideoToMp3", async (event, videoPath) => {
   const filename = videoPath
     .replace(/^.*[\\\/]/, "")
     .replace(/\.[0-9a-z]+$/i, "");
-  const output = path.join(toMp3Dir, filename);
+  const output = path.join(toMp3Dir, `${filename}.mp3`);
   convertVideoToMp3(videoPath, output, event, filename);
 });
 
@@ -489,7 +488,7 @@ async function saveMix(tags, event) {
   if (success) {
     (async () => {
       console.log(tags.title);
-      const outputPath = path.join(mixesDir, tags.title);
+      const outputPath = path.join(mixesDir, `${tags.title}.mp3`);
       await moveFile(file, outputPath);
       const savedMix = await mm.parseFile(outputPath);
       const mixData = {
