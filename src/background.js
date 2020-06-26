@@ -200,6 +200,7 @@ ipcMain.on("pickMusic", async (event) => {
     filters: [
       {
         name: "Sound (.mp3, .wav, .ogg, .m4a)",
+        extensions: ["mp3", "wav", "ogg", "m4a"],
       },
     ],
     properties: ["openDirectory"],
