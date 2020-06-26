@@ -5,7 +5,9 @@
 
     <div class="grid2">
       <div class="functions">
-        <div class="buttonn" @click="selectVideo" id="selectVideo">Select Video</div>
+        <div class="buttonn" @click="selectVideo" id="selectVideo">
+          Select Video
+        </div>
         <video id="video" controls src></video>
         <div class="buttonn" @click="convert" id="convertVideo">Convert</div>
       </div>
@@ -36,7 +38,7 @@ export default {
   data() {
     return {
       video: null,
-      converted: []
+      converted: [],
     };
   },
   computed: mapGetters(["songQueue"]),
@@ -49,10 +51,11 @@ export default {
       this.showNotification({
         error: false,
         title: "Success",
-        body: `Video converted Music/FLBtoMp3 Folder`
+        body: `Video converted Music/FLBtoMp3 Folder`,
       });
       this.addConverted(sdata);
-      document.querySelector(".innerBar").height = "0%";
+      document.querySelector(".innerBar").style.height = "0%";
+      console.log("Progress Bar reset");
     });
     electron.ipcRenderer.on("conversionError", (e, error) => {
       this.showConversionError();
@@ -93,7 +96,7 @@ export default {
         title: res.title,
         path: res.path,
         poster: "/img/poster.e5b0f5a2.png",
-        duration: res.duration
+        duration: res.duration,
       };
       this.converted.unshift(mixObj);
       // console.log(this.songQueue[0]);
@@ -106,7 +109,7 @@ export default {
       this.showNotification({
         error: true,
         title: "Error",
-        body: `Error in Converting Video`
+        body: `Error in Converting Video`,
       });
     },
     async convert() {
@@ -116,12 +119,12 @@ export default {
       document.querySelector("#infoText").textContent = "Converting...";
       setTimeout(() => {
         // this.startProgressRequests();
-        // let progress = electron.ipcRenderer.send("getProgress");
+        let progress = electron.ipcRenderer.send("getProgress");
         electron.ipcRenderer.send("convertVideoToMp3", this.video);
         // this.addConverted(res);
       }, 200);
-    }
-  }
+    },
+  },
 };
 </script>
 

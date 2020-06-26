@@ -214,7 +214,8 @@ export default {
         title: "Sucess",
         body: `Mix saved to Music/flbMixes Folder`,
       });
-      document.querySelector(".innerBar").height = "0%";
+      document.querySelector(".innerBar").style.height = "0%";
+      console.log("Progress Bar reset");
     });
     electron.ipcRenderer.on("mixSaveError", (e) => {
       this.showNotification({
