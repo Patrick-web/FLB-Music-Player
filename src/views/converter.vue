@@ -38,6 +38,7 @@ export default {
   data() {
     return {
       video: null,
+      videoLength: 0,
       converted: [],
     };
   },
@@ -45,6 +46,7 @@ export default {
   created() {
     electron.ipcRenderer.on("progress", (e, percentage) => {
       document.querySelector(".innerBar").style.height = `${percentage}%`;
+      console.log("Receiving conversion progress " + percentage);
     });
     electron.ipcRenderer.on("convertedSong", (e, sdata) => {
       document.body.classList.add("hideInformerBody");
@@ -86,7 +88,10 @@ export default {
       console.log(this.video);
       console.log(data);
       if (data) {
-        document.querySelector("#video").src = "file://" + data;
+        const video = document.querySelector("#video");
+        video.src = "file://" + data;
+        this.videoLength = video.duration;
+        console.log(this.videoLength);
       }
     },
     addConverted(res) {
@@ -118,10 +123,8 @@ export default {
       document.querySelector("#mixLoader").src = convertImg;
       document.querySelector("#infoText").textContent = "Converting...";
       setTimeout(() => {
-        // this.startProgressRequests();
         let progress = electron.ipcRenderer.send("getProgress");
         electron.ipcRenderer.send("convertVideoToMp3", this.video);
-        // this.addConverted(res);
       }, 200);
     },
   },

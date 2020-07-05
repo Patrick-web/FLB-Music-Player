@@ -411,6 +411,9 @@ async function convertVideoToMp3(input, output, event, songTitle) {
   ffmpeg(input)
     .toFormat("mp3")
     .on("start", () => {
+      const stats = fs.statSync(input);
+      const fileSizeInBytes = stats["size"];
+      console.log("Input size is " + fileSizeInBytes);
       console.log("Starting conversion");
     })
     .on("error", (err) => {
@@ -419,8 +422,9 @@ async function convertVideoToMp3(input, output, event, songTitle) {
     })
     .on("progress", (progress) => {
       // console.log(JSON.stringify(progress));
-      console.log("Conveting: " + progress.targetSize + " KB converted");
+      // console.log("Conveting: " + progress.targetSize + " KB converted");
       processProgress = progress.targetSize;
+      console.log(progress);
       win.webContents.send("progress", Math.floor(progress.percent));
     })
     .on("end", async () => {
