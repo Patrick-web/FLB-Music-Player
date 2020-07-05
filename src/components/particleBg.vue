@@ -2,7 +2,7 @@
   <vue-particles
     :particleOpacity="0.5"
     :particleSize="3"
-    :particlesNumber="50"
+    :particlesNumber="30"
     color="#FF0050"
     class="particle-js"
     :lineLinked="true"

@@ -67,10 +67,11 @@ const actions = {
   },
   deletePlaylist({ commit }, index) {
     commit("deletePlaylist", index);
-    actions.savePlaylistsToFS();
+    // actions.savePlaylistsToFS();
   },
   editPlaylist({ commit }, data) {
     commit("editPlaylist", data);
+    actions.savePlaylistsToFS();
   },
   addSongToPlaylist({ commit }, data) {
     commit("addSongToPlaylist", data);

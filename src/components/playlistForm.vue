@@ -1,11 +1,9 @@
 <template>
-  <form class="form  playlistAdder">
-    <label for="">Enter playlist name</label>
+  <form class="form playlistAdder">
+    <label for>Enter playlist name</label>
     <input id="newPlaylist" class="inputElem" type="text" />
     <button @click="createAndAdd">Create & Add</button>
-    <button style="background: rgb(255, 0, 119);" @click="hideForm">
-      Cancel
-    </button>
+    <button style="background: rgb(255, 0, 119);" @click="hideForm">Cancel</button>
   </form>
 </template>
 
@@ -26,17 +24,19 @@ export default {
       const newPlaylist = {
         name: newPlaylistName,
         id: Date.now(),
-        songs: [songToAdd],
+        songs: [songToAdd]
       };
       this.addNewPlaylist(newPlaylist);
-      this.savePlaylistsToFS();
+      setTimeout(() => {
+        this.savePlaylistsToFS();
+      }, 200);
       document.body.classList.remove("showPlaylistAdder");
     },
     savePlaylistsToFS() {
       const json = JSON.stringify(this.playlists);
       electron.ipcRenderer.send("savePlaylists", json);
-    },
-  },
+    }
+  }
 };
 </script>
 

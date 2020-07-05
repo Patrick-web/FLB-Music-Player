@@ -3,48 +3,30 @@
     <playform style="position:fixed;z-index:5" />
     <confirmBox style="position:fixed;z-index:5" v-on:confirmation="decide" />
 
-    <editform
-      style="position:fixed;z-index:5"
-      :index="targetListIndex"
-      :playlist="targetList"
-    />
+    <editform style="position:fixed;z-index:5" :index="targetListIndex" :playlist="targetList" />
     <div class="playlistCont">
       <div id="title" style="position:relative">
         Playlists
         <div @click="hidePlaylists" id="hidePlaylists">
-          <img id="" src="@/assets/x.svg" alt="" />
+          <img id src="@/assets/x.svg" alt />
         </div>
       </div>
-      <div
-        :key="playlist.id"
-        v-for="(playlist, index) in playlists"
-        class="playList"
-      >
+      <div :key="playlist.id" v-for="(playlist, index) in playlists" class="playList">
         <div class="playlist-name">
           <div class="pl-name">
             <p>{{ playlist.name }}</p>
             <div class="playListBt" @click="loadlist(index)">
-              <img src="@/assets/triangle.svg" alt="" />
+              <img src="@/assets/triangle.svg" alt />
             </div>
           </div>
           <div class="options">
             <!-- <img src="@/assets/playListBtFull.png" id="playList" alt=""> -->
-            <img
-              src="@/assets/pen.png"
-              @click="showEditBox(playlist, index)"
-              alt=""
-            />
-            <img
-              src="@/assets/trash.png"
-              @click="showConfirmBox(playlist.name, index)"
-              alt=""
-            />
+            <img src="@/assets/pen.png" @click="showEditBox(playlist, index)" alt />
+            <img src="@/assets/trash.png" @click="showConfirmBox(playlist.name, index)" alt />
           </div>
         </div>
         <div class="playlist-Songs">
-          <div :key="song.id" v-for="song in playlist.songs" class="songName">
-            {{ song.title }}
-          </div>
+          <div :key="song.id" v-for="song in playlist.songs" class="songName">{{ song.title }}</div>
         </div>
       </div>
     </div>
@@ -62,15 +44,15 @@ export default {
   components: {
     playform,
     editform,
-    confirmBox,
+    confirmBox
   },
   data() {
     return {
       targetListIndex: null,
       targetList: {
         name: "sampple list name",
-        songs: [{ title: "sample song" }],
-      },
+        songs: [{ title: "sample song" }]
+      }
     };
   },
   computed: mapGetters(["playlists"]),
@@ -101,8 +83,15 @@ export default {
       console.log(decision);
       if (decision === "Yes") {
         this.deletePlaylist(this.targetListIndex);
+        setTimeout(() => {
+          this.savePlaylistsToFS();
+        }, 100);
       }
     },
+    savePlaylistsToFS() {
+      const json = JSON.stringify(this.playlists);
+      electron.ipcRenderer.send("savePlaylists", json);
+    }
   },
   mounted() {
     const playlistData = electron.ipcRenderer.sendSync("getPlaylists");
@@ -115,7 +104,7 @@ export default {
     } else {
       this.loadPlaylistsFromFS(playlists);
     }
-  },
+  }
 };
 </script>
 
