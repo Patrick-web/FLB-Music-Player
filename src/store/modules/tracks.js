@@ -114,8 +114,11 @@ const mutations = {
     (state.songsToMix = unduplicate([...state.songsToMix, ...songs])),
 
   addToRecents: (state, index) => {
-    state.recents.push(state.songQueue[index]);
+    state.recents.unshift(state.songQueue[index]);
     state.recents = unduplicate(state.recents);
+    if (state.recents.length > 15) {
+      state.recents = state.recents.splice(0, 15);
+    }
   },
 
   loadRecents: (state, songs) => (state.recents = songs),

@@ -109,7 +109,6 @@ if (isDevelopment) {
 
 async function parseFile(file, scanDir) {
   let stat = fs.lstatSync(file);
-  console.log(stat.isDirectory());
   if (stat.isDirectory()) {
     if (!scanDir) return;
 
@@ -120,11 +119,9 @@ async function parseFile(file, scanDir) {
       let p = await parseFile(path.join(file, child));
       if (p) output.push(p[0]);
     }
-    // console.log(output[1].tags.format);
 
     return output;
   } else {
-    console.log("Continuing to parse individuals");
     let ext = path.extname(file);
     if (ext != ".mp3" && ext != ".ogg" && ext != ".wav" && ext != ".m4a")
       return;
@@ -156,8 +153,15 @@ ipcMain.on("saveAddedSongs", (event, json) => {
 ipcMain.on("getPreviouslyAdded", (event) => {
   const pth = path.join(appDataFolder, "flb_songs.json");
   if (fs.existsSync(pth)) {
-    const prevAdded = fs.readFileSync(pth, "utf8");
-    event.returnValue = prevAdded;
+    const stillExisting = [];
+    const prevAdded = JSON.parse(fs.readFileSync(pth, "utf8"));
+    // console.log(prevAdded);
+    prevAdded.forEach((song) => {
+      if (exists(song.path)) {
+        stillExisting.push(song);
+      }
+    });
+    event.returnValue = stillExisting;
   } else {
     event.returnValue = false;
   }
@@ -177,7 +181,7 @@ ipcMain.on("saveRecentSongs", (event, json) => {
 
 ipcMain.on("getPlaylists", (event) => {
   const pth = path.join(appDataFolder, "flb_playlists.json");
-  if (fs.existsSync(pth)) {
+  if (exists(pth)) {
     event.returnValue = fs.readFileSync(pth, "utf8");
   } else {
     event.returnValue = [];
@@ -186,8 +190,15 @@ ipcMain.on("getPlaylists", (event) => {
 
 ipcMain.on("getRecents", (event) => {
   const pth = path.join(appDataFolder, "flb_recents.json");
-  if (fs.existsSync(pth)) {
-    event.returnValue = fs.readFileSync(pth, "utf8");
+  if (exists(pth)) {
+    const stillExisting = [];
+    const recents = JSON.parse(fs.readFileSync(pth, "utf8"));
+    recents.forEach((song) => {
+      if (exists(song.path)) {
+        stillExisting.push(song);
+      }
+    });
+    event.returnValue = stillExisting;
   } else {
     event.returnValue = false;
   }
@@ -578,4 +589,7 @@ function saveBinaryPaths(err, data) {
     ffmpeg.setFfmpegPath(ffmpegPath);
     ffmpeg.setFfprobePath(ffprobePath);
   }
+}
+function exists(path) {
+  return fs.existsSync(path);
 }

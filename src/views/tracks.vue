@@ -2,7 +2,12 @@
   <div class="tracksView">
     <div class="tactions">
       <p id="playingType">Added</p>
-      <img id="backToAdded" @click="backToAddedSongs" src="@/assets/arrow.svg" alt />
+      <img
+        id="backToAdded"
+        @click="backToAddedSongs"
+        src="@/assets/arrow.svg"
+        alt
+      />
     </div>
     <navigation />
 
@@ -38,20 +43,20 @@ export default {
     return {
       audioFile: songSrc,
       isPlaying: false,
-      songs: []
+      songs: [],
     };
   },
   computed: mapGetters(["songQueue"]),
   components: {
     card,
-    navigation
+    navigation,
   },
   methods: {
     ...mapActions([
       "renderSongsFromFolder",
       "persistPreviouslyLoadedSongs",
       "renderPreviouslyLoaded",
-      "loadRecents"
+      "loadRecents",
     ]),
 
     backToAddedSongs() {
@@ -59,26 +64,23 @@ export default {
       document.querySelector("#playingType").style.marginLeft = "0px";
       this.renderSongsFromFolder();
       document.querySelector("#playingType").textContent = "Added";
-    }
+    },
   },
   mounted() {
     setTimeout(async () => {
-      const songsData = await electron.ipcRenderer.sendSync(
+      const prevSongs = await electron.ipcRenderer.sendSync(
         "getPreviouslyAdded"
       );
-      if (songsData) {
-        const prevSongs = JSON.parse(songsData);
-        console.log(prevSongs);
+      if (prevSongs) {
         this.persistPreviouslyLoadedSongs(prevSongs);
         this.renderPreviouslyLoaded(prevSongs);
       }
-      const recentsData = await electron.ipcRenderer.sendSync("getRecents");
-      if (recentsData) {
-        const recentSongs = JSON.parse(recentsData);
+      const recentSongs = await electron.ipcRenderer.sendSync("getRecents");
+      if (recentSongs) {
         this.loadRecents(recentSongs);
       }
-    }, 500);
-  }
+    }, 200);
+  },
 };
 </script>
 

@@ -3,7 +3,11 @@
     <playform style="position:fixed;z-index:5" />
     <confirmBox style="position:fixed;z-index:5" v-on:confirmation="decide" />
 
-    <editform style="position:fixed;z-index:5" :index="targetListIndex" :playlist="targetList" />
+    <editform
+      style="position:fixed;z-index:5"
+      :index="targetListIndex"
+      :playlist="targetList"
+    />
     <div class="playlistCont">
       <div id="title" style="position:relative">
         Playlists
@@ -11,7 +15,11 @@
           <img id src="@/assets/x.svg" alt />
         </div>
       </div>
-      <div :key="playlist.id" v-for="(playlist, index) in playlists" class="playList">
+      <div
+        :key="playlist.id"
+        v-for="(playlist, index) in playlists"
+        class="playList"
+      >
         <div class="playlist-name">
           <div class="pl-name">
             <p>{{ playlist.name }}</p>
@@ -20,13 +28,22 @@
             </div>
           </div>
           <div class="options">
-            <!-- <img src="@/assets/playListBtFull.png" id="playList" alt=""> -->
-            <img src="@/assets/pen.png" @click="showEditBox(playlist, index)" alt />
-            <img src="@/assets/trash.png" @click="showConfirmBox(playlist.name, index)" alt />
+            <img
+              src="@/assets/pen.png"
+              @click="showEditBox(playlist, index)"
+              alt
+            />
+            <img
+              src="@/assets/trash.png"
+              @click="showConfirmBox(playlist.name, index)"
+              alt
+            />
           </div>
         </div>
         <div class="playlist-Songs">
-          <div :key="song.id" v-for="song in playlist.songs" class="songName">{{ song.title }}</div>
+          <div :key="song.id" v-for="song in playlist.songs" class="songName">
+            {{ song.title }}
+          </div>
         </div>
       </div>
     </div>
@@ -44,15 +61,15 @@ export default {
   components: {
     playform,
     editform,
-    confirmBox
+    confirmBox,
   },
   data() {
     return {
       targetListIndex: null,
       targetList: {
         name: "sampple list name",
-        songs: [{ title: "sample song" }]
-      }
+        songs: [{ title: "sample song" }],
+      },
     };
   },
   computed: mapGetters(["playlists"]),
@@ -91,7 +108,7 @@ export default {
     savePlaylistsToFS() {
       const json = JSON.stringify(this.playlists);
       electron.ipcRenderer.send("savePlaylists", json);
-    }
+    },
   },
   mounted() {
     const playlistData = electron.ipcRenderer.sendSync("getPlaylists");
@@ -104,7 +121,7 @@ export default {
     } else {
       this.loadPlaylistsFromFS(playlists);
     }
-  }
+  },
 };
 </script>
 
@@ -155,7 +172,7 @@ export default {
   width: 150px;
   background: linear-gradient(150deg, rgba(20, 20, 20, 0.452), rgb(32, 32, 32));
   padding-bottom: 8px;
-  transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  transition: 0.2s ease-in-out;
   #title {
     background: white;
     color: rgba(0, 0, 0, 0.863);
@@ -183,14 +200,13 @@ export default {
       position: absolute;
       bottom: 0%;
       left: 5px;
-      transform: translateY(65%);
+      transform: translateY(60%);
       display: none;
-      // display: flex;
-      // margin-top: -20px;
       margin-left: -3px;
       justify-content: space-between;
       align-items: center;
       width: 100%;
+      padding-top: 30px;
       img {
         width: 30px;
         transition: 0.2s ease-in-out;

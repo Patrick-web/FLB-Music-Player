@@ -3,8 +3,8 @@
     <label for="">Edit Playlist</label>
     <input id="edPlName" class="inputElem" :value="playlist.name" type="text" />
     <p id="edPlIndex" style="display:none">{{ index }}</p>
-    <button @click="saveEdit" id="editPlBT">Save</button>
-    <button @click="hideForm" id="hide">Cancel</button>
+    <p class="formBtn" @click="saveEdit" id="editPlBT">Save</p>
+    <p class="formBtn formBtn-red" @click="hideForm" id="hide">Cancel</p>
 
     <div class="playListSongs">
       <div
@@ -135,5 +135,20 @@ export default {
       cursor: pointer;
     }
   }
+}
+.formBtn {
+  margin: auto;
+  margin-bottom: 5px;
+  padding: 5px;
+  width: 40px;
+  background: #0058dd;
+  border-radius: 5px;
+  transition: 0.2s ease;
+}
+.formBtn:hover {
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 1.3em;
+  text-transform: uppercase;
 }
 </style>

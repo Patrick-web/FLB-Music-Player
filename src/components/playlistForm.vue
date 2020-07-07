@@ -1,10 +1,22 @@
 <template>
-  <form class="form playlistAdder">
+  <div class="form playlistAdder">
     <label for>Enter playlist name</label>
     <input id="newPlaylist" class="inputElem" type="text" />
-    <button @click="createAndAdd">Create & Add</button>
-    <button style="background: rgb(255, 0, 119);" @click="hideForm">Cancel</button>
-  </form>
+    <p
+      class="formBtn"
+      style="width: 240px;margin-bottom:10px"
+      @click="createAndAdd"
+    >
+      Create & Add
+    </p>
+    <p
+      class="formBtn"
+      style="background: rgb(255, 0, 119);width: 240px;margin-bottom:10px"
+      @click="hideForm"
+    >
+      Cancel
+    </p>
+  </div>
 </template>
 
 <script>
@@ -17,26 +29,28 @@ export default {
     ...mapActions(["addNewPlaylist"]),
     hideForm() {
       document.body.classList.remove("showPlaylistAdder");
+      document.querySelector("#newPlaylist").value = "";
     },
     createAndAdd() {
-      const newPlaylistName = document.querySelector("#newPlaylist").value;
+      const newPlaylistName = document.querySelector("#newPlaylist");
       const songToAdd = window.currentSong;
       const newPlaylist = {
-        name: newPlaylistName,
+        name: newPlaylistName.value,
         id: Date.now(),
-        songs: [songToAdd]
+        songs: [songToAdd],
       };
       this.addNewPlaylist(newPlaylist);
       setTimeout(() => {
         this.savePlaylistsToFS();
       }, 200);
+      newPlaylistName.value = "";
       document.body.classList.remove("showPlaylistAdder");
     },
     savePlaylistsToFS() {
       const json = JSON.stringify(this.playlists);
       electron.ipcRenderer.send("savePlaylists", json);
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -70,25 +84,6 @@ export default {
     border-radius: 20px;
     border: 2px solid rgba(146, 147, 148, 0.596);
     background: rgba(255, 255, 255, 0);
-  }
-  button {
-    display: block;
-    margin: auto;
-    margin-bottom: 10px;
-    font-size: 1.2em;
-    padding: 5px;
-    background: rgb(1, 155, 65);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    width: 130px;
-    transition: 0.2s ease-in-out;
-  }
-  button:hover {
-    width: 140px;
-    cursor: pointer;
-    background: rgb(0, 133, 104);
-    border-radius: 30px;
   }
 }
 label {
