@@ -2,12 +2,7 @@
   <div class="tracksView">
     <div class="tactions">
       <p id="playingType">Added</p>
-      <img
-        id="backToAdded"
-        @click="backToAddedSongs"
-        src="@/assets/arrow.svg"
-        alt
-      />
+      <img id="backToAdded" @click="backToAddedSongs" src="@/assets/arrow.svg" alt />
     </div>
     <navigation />
 
@@ -17,20 +12,6 @@
       enter-active-class="animated fadeInRight"
       leave-active-class="animated fadeOutLeft"
     >
-      <!-- <kinesis-container
-      class="parent"
-      :audio="audioFile"
-      :playAudio="isPlaying">
-      <button
-      class="button"
-      @click="changeState"
-      />
-    <kinesis-audio
-      class="child"
-      type="scale"
-      :strength="30"
-      :audioIndex="75"
-      >-->
       <card
         :key="song.id"
         v-for="(song, index) in songQueue"
@@ -41,17 +22,6 @@
         :id="song.id"
         :index="index"
       />
-
-      <!-- </kinesis-audio> -->
-      <!-- <card/> -->
-      <!-- <card/>
-    <card/>
-    <card/>
-    <card/>
-    <card/>
-      <card/>-->
-
-      <!-- </kinesis-container> -->
     </transition-group>
   </div>
 </template>
@@ -68,20 +38,20 @@ export default {
     return {
       audioFile: songSrc,
       isPlaying: false,
-      songs: [],
+      songs: []
     };
   },
   computed: mapGetters(["songQueue"]),
   components: {
     card,
-    navigation,
+    navigation
   },
   methods: {
     ...mapActions([
       "renderSongsFromFolder",
       "persistPreviouslyLoadedSongs",
       "renderPreviouslyLoaded",
-      "loadRecents",
+      "loadRecents"
     ]),
 
     backToAddedSongs() {
@@ -89,25 +59,26 @@ export default {
       document.querySelector("#playingType").style.marginLeft = "0px";
       this.renderSongsFromFolder();
       document.querySelector("#playingType").textContent = "Added";
-    },
+    }
   },
   mounted() {
     setTimeout(async () => {
       const songsData = await electron.ipcRenderer.sendSync(
         "getPreviouslyAdded"
       );
+      if (songsData) {
+        const prevSongs = JSON.parse(songsData);
+        console.log(prevSongs);
+        this.persistPreviouslyLoadedSongs(prevSongs);
+        this.renderPreviouslyLoaded(prevSongs);
+      }
       const recentsData = await electron.ipcRenderer.sendSync("getRecents");
       if (recentsData) {
         const recentSongs = JSON.parse(recentsData);
         this.loadRecents(recentSongs);
       }
-      if (songsData) {
-        const prevSongs = JSON.parse(songsData);
-        this.persistPreviouslyLoadedSongs(prevSongs);
-        this.renderPreviouslyLoaded(prevSongs);
-      }
     }, 500);
-  },
+  }
 };
 </script>
 

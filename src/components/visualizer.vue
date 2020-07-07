@@ -2,27 +2,25 @@
   <div style="z-index:-1" id="content">
     <div id="out"></div>
   </div>
-
 </template>
 <script>
-    import * as  visualise from '@/assets/visualise.js'
-    const songSrc = require('@/assets/Syntax200.mp3')
+import * as visualise from "@/assets/visualise.js";
 
 export default {
-    data() {
-      return {
-        audioFile: songSrc,
-        isPlaying: false,
-      }
-    },
-    mounted(){
-        // visualise.startVisualizer();
-    }
-}
+  data() {
+    return {
+      audioFile: songSrc,
+      isPlaying: false,
+    };
+  },
+  mounted() {
+    // visualise.startVisualizer();
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-#out{
+#out {
   display: flex;
   justify-content: center;
   align-items: center;

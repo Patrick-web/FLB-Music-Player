@@ -2,19 +2,19 @@
   <div class="menu">
     <div class="menuShow"></div>
     <div @click="renderRecents" id="recent" class="icn">
-      <img src="@/assets/clock.png" alt="" />
+      <img src="@/assets/clock.png" alt />
       <p style="width:150px" class="exp">Recently Played</p>
     </div>
     <div @click="showPlaylists" id="fav" class="icn">
-      <img src="@/assets/favourite.svg" alt="" />
+      <img src="@/assets/favourite.svg" alt />
       <p style="width:90px" class="exp">Playlists</p>
     </div>
     <div v-on:click="pickMusic(true)" id="folder" class="icn">
-      <img src="@/assets/folder.png" alt="" />
+      <img src="@/assets/folder.png" alt />
       <p class="exp" style="width:160px">Add Music folder</p>
     </div>
     <div v-on:click="pickSongs(true)" id="musicPlus" class="icn">
-      <img src="@/assets/musicPlus.svg" alt="" />
+      <img src="@/assets/musicPlus.svg" alt />
       <p class="exp" style="background:#00FF8C">Add Songs</p>
     </div>
   </div>
@@ -28,7 +28,7 @@ import { mapActions, mapGetters } from "vuex";
 export default {
   data() {
     return {
-      songs: [],
+      songs: []
     };
   },
   computed: mapGetters(["addedSongs"]),
@@ -36,7 +36,7 @@ export default {
     ...mapActions([
       "persistFolderSongs",
       "renderSongsFromFolder",
-      "renderRecents",
+      "renderRecents"
     ]),
     showPlaylists() {
       document.body.classList.toggle("showPlaylistCont");
@@ -59,7 +59,6 @@ export default {
       document.querySelector("#loadingImg").classList.add("jello");
       setTimeout(() => {
         let data = electron.ipcRenderer.sendSync("pickSongs");
-
         for (let file of data) {
           this.songs.push(file);
         }
@@ -69,7 +68,7 @@ export default {
     },
     extractInfo(data) {
       let songs = [];
-      data.forEach((item) => {
+      data.forEach(item => {
         let poster;
         let duration;
         // if(item.tags)
@@ -85,7 +84,7 @@ export default {
           title: item.name,
           poster: this.setPoster(poster),
           path: item.location,
-          duration: duration,
+          duration: duration
         };
         songs.push(song);
       });
@@ -101,10 +100,10 @@ export default {
       this.saveFolderSongsToJson(songs);
     },
     saveFolderSongsToJson(songs) {
-      console.log("Remembering");
+      console.log("Saving");
+      console.log(this.addedSongs);
       const json = JSON.stringify(this.addedSongs);
       const isSaved = electron.ipcRenderer.sendSync("saveAddedSongs", json);
-      console.log(isSaved);
     },
     setPoster(arg) {
       if (arg === false) {
@@ -125,8 +124,8 @@ export default {
         binary += String.fromCharCode(bytes[i]);
       }
       return window.btoa(binary);
-    },
-  },
+    }
+  }
 };
 </script>
 

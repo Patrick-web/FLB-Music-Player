@@ -55,6 +55,8 @@ const actions = {
     commit("removeSongFromQueue", index);
   },
   persistFolderSongs({ commit }, songs) {
+    console.log("Sending to unduplicate");
+    console.log(songs);
     commit("persistFolderSongs", unduplicate(songs, state.addedSongs));
     commit("queueToMix", songs);
   },
@@ -95,8 +97,6 @@ const actions = {
   renderPreviouslyLoaded({ commit }, songs) {
     commit("renderPreviouslyLoaded", unduplicate(songs, state.addedSongs));
     commit("queueToMix", songs);
-    // const rendered = document.querySelectorAll('.card');
-    // rendered[0].querySelector('.a')
   },
 };
 
@@ -128,8 +128,7 @@ const mutations = {
 
   renderSongsFromFolder: (state) => (state.songQueue = state.addedSongs),
 
-  persistFolderSongs: (state, songs) =>
-    (state.addedSongs = unduplicate([songs, state.addedSongs])),
+  persistFolderSongs: (state, songs) => (state.addedSongs = songs),
 
   persistPreviouslyLoadedSongs: (state, songs) => (state.addedSongs = songs),
 
@@ -166,12 +165,15 @@ const mutations = {
   deletePlaylist: (state, index) => state.playlists.splice(index, 1),
 };
 function unduplicate(array1, array2) {
+  // console.log("Unduplicate array1 ");
+  // console.log(array1);
+  // console.log("Unduplicate array2 ");
+  // console.log(array2);
   let withDuplicates;
-  if (array2) {
+  if (array2 && array2.length > 0) {
+    // console.log("Arrray 2 exists");
     withDuplicates = [...array1, ...array2];
-    console.log("Two arrays passed");
   } else {
-    console.log("One array passed");
     withDuplicates = array1;
   }
   const pureSongs = withDuplicates.reduce((acc, current) => {
@@ -182,6 +184,8 @@ function unduplicate(array1, array2) {
       return acc;
     }
   }, []);
+  // console.log("Without duplicates");
+  // console.log(pureSongs);
   return pureSongs;
 }
 export default {

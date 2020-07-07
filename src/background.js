@@ -109,7 +109,7 @@ if (isDevelopment) {
 
 async function parseFile(file, scanDir) {
   let stat = fs.lstatSync(file);
-
+  console.log(stat.isDirectory());
   if (stat.isDirectory()) {
     if (!scanDir) return;
 
@@ -124,6 +124,7 @@ async function parseFile(file, scanDir) {
 
     return output;
   } else {
+    console.log("Continuing to parse individuals");
     let ext = path.extname(file);
     if (ext != ".mp3" && ext != ".ogg" && ext != ".wav" && ext != ".m4a")
       return;
@@ -142,7 +143,6 @@ async function parseFile(file, scanDir) {
     if (ext == ".mp3" || ext == ".m4a") {
       out.tags = await mm.parseFile(file, { native: true });
     }
-
     return [out];
   }
 }
@@ -186,7 +186,6 @@ ipcMain.on("getPlaylists", (event) => {
 
 ipcMain.on("getRecents", (event) => {
   const pth = path.join(appDataFolder, "flb_recents.json");
-  // console.log(pth);
   if (fs.existsSync(pth)) {
     event.returnValue = fs.readFileSync(pth, "utf8");
   } else {
@@ -231,7 +230,6 @@ ipcMain.on("pickSongs", async (event) => {
     ],
     properties: ["multiSelections", "openFile"],
   });
-
   if (!files) {
     event.returnValue = [];
     return null;
@@ -241,9 +239,8 @@ ipcMain.on("pickSongs", async (event) => {
 
   for (let file of files) {
     let arr = await parseFile(file, false);
-    if (arr) output = output.concat(arr);
+    if (arr) output = [...arr];
   }
-
   event.returnValue = output;
 });
 

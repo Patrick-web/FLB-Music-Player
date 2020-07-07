@@ -57,7 +57,6 @@ import tracks from "@/views/tracks.vue";
 import start from "@/views/start.vue";
 import mixer from "@/views/mixer.vue";
 import converter from "@/views/converter.vue";
-import sideNav from "@/components/sideNav.vue";
 import player from "@/components/bottomControls.vue";
 import loading from "@/components/loading.vue";
 import progressBar from "@/components/progressBar.vue";
@@ -120,7 +119,6 @@ export default {
     tracks,
     player,
     start,
-    sideNav,
     loading,
     playlist,
     mixer,
