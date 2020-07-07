@@ -298,11 +298,16 @@ ipcMain.on("mixSongs", async (event, songs) => {
 });
 
 ipcMain.on("convertVideoToMp3", async (event, videoPath) => {
-  const filename = videoPath
-    .replace(/^.*[\\\/]/, "")
-    .replace(/\.[0-9a-z]+$/i, "");
-  const output = path.join(toMp3Dir, `${filename}.mp3`);
-  convertVideoToMp3(videoPath, output, event, filename);
+  if (exists(ffpths)) {
+    const filename = videoPath
+      .replace(/^.*[\\\/]/, "")
+      .replace(/\.[0-9a-z]+$/i, "");
+    const output = path.join(toMp3Dir, `${filename}.mp3`);
+    convertVideoToMp3(videoPath, output, event, filename);
+  } else {
+    win.webContents.send("promptInternet");
+    console.log("Telling user to turn on internet");
+  }
 });
 
 ipcMain.on("getProgress", (event) => {

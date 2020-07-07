@@ -5,9 +5,7 @@
 
     <div class="grid2">
       <div class="functions">
-        <div class="buttonn" @click="selectVideo" id="selectVideo">
-          Select Video
-        </div>
+        <div class="buttonn" @click="selectVideo" id="selectVideo">Select Video</div>
         <video id="video" controls src></video>
         <div class="buttonn" @click="convert" id="convertVideo">Convert</div>
       </div>
@@ -39,11 +37,18 @@ export default {
     return {
       video: null,
       videoLength: 0,
-      converted: [],
+      converted: []
     };
   },
   computed: mapGetters(["songQueue"]),
   created() {
+    electron.ipcRenderer.on("promptInternet", e => {
+      this.showNotification({
+        error: true,
+        title: "Error",
+        body: `Please turn on internet connection to download files required to use this feature`
+      });
+    });
     electron.ipcRenderer.on("progress", (e, percentage) => {
       document.querySelector(".innerBar").style.height = `${percentage}%`;
       console.log("Receiving conversion progress " + percentage);
@@ -53,7 +58,7 @@ export default {
       this.showNotification({
         error: false,
         title: "Success",
-        body: `Video converted Music/FLBtoMp3 Folder`,
+        body: `Video converted Music/FLBtoMp3 Folder`
       });
       this.addConverted(sdata);
       document.querySelector(".innerBar").style.height = "0%";
@@ -101,7 +106,7 @@ export default {
         title: res.title,
         path: res.path,
         poster: "/img/poster.e5b0f5a2.png",
-        duration: res.duration,
+        duration: res.duration
       };
       this.converted.unshift(mixObj);
       // console.log(this.songQueue[0]);
@@ -114,7 +119,7 @@ export default {
       this.showNotification({
         error: true,
         title: "Error",
-        body: `Error in Converting Video`,
+        body: `Error in Converting Video`
       });
     },
     async convert() {
@@ -126,8 +131,8 @@ export default {
         let progress = electron.ipcRenderer.send("getProgress");
         electron.ipcRenderer.send("convertVideoToMp3", this.video);
       }, 200);
-    },
-  },
+    }
+  }
 };
 </script>
 
