@@ -8,11 +8,13 @@ import {
 import * as mm from "music-metadata";
 import * as fs from "fs";
 import * as path from "path";
-import * as ffbinaries from "ffbinaries";
 const ffmpeg = require("fluent-ffmpeg");
 import { uuid } from "uuidv4";
 const moveFile = require("move-file");
 const NodeID3 = require("node-id3");
+
+import { exists, getBinaries } from "./fs/utils";
+import { parseFile } from "./fs/parsers";
 
 const appDataFolder = app.getPath("userData");
 const musicDir = app.getPath("music");
@@ -23,7 +25,8 @@ const lyricsDir = path.join(appDataFolder, "lyrics");
 const mixesDir = path.join(musicDir, "flbMixes");
 const lyricVids = path.join(videosDir, "flbLyricVideos");
 const ffpths = path.join(appDataFolder, "ffPaths.json");
-if (fs.existsSync(path.join(appDataFolder, "ffmpeg"))) {
+
+if (exists(path.join(appDataFolder, "ffmpeg"))) {
   const pths = JSON.parse(fs.readFileSync(ffpths, "utf8"));
   ffmpeg.setFfmpegPath(pths.ffmpeg);
   ffmpeg.setFfprobePath(pths.ffprobe);
@@ -45,8 +48,8 @@ const defaultPoster = path.join(__static, "icon.png");
 console.log(defaultPoster);
 function createWindow() {
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1100,
+    height: 650,
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false,
@@ -61,6 +64,7 @@ function createWindow() {
     createProtocol("app");
     win.loadURL("app://./index.html");
   }
+  win.center();
   win.maximize();
 
   win.on("closed", () => {
@@ -107,43 +111,6 @@ if (isDevelopment) {
   }
 }
 
-async function parseFile(file, scanDir) {
-  let stat = fs.lstatSync(file);
-  if (stat.isDirectory()) {
-    if (!scanDir) return;
-
-    let files = fs.readdirSync(file);
-    let output = [];
-
-    for (let child of files) {
-      let p = await parseFile(path.join(file, child));
-      if (p) output.push(p[0]);
-    }
-
-    return output;
-  } else {
-    let ext = path.extname(file);
-    if (ext != ".mp3" && ext != ".ogg" && ext != ".wav" && ext != ".m4a")
-      return;
-
-    let out = {
-      date: stat.ctimeMs,
-      extension: ext,
-      location: file,
-      name: path
-        .basename(file)
-        .split(".")
-        .slice(0, -1)
-        .join("."),
-    };
-
-    if (ext == ".mp3" || ext == ".m4a") {
-      out.tags = await mm.parseFile(file, { native: true });
-    }
-    return [out];
-  }
-}
-
 ipcMain.on("saveAddedSongs", (event, json) => {
   const fileName = "flb_songs.json";
   const content = json;
@@ -170,13 +137,11 @@ ipcMain.on("savePlaylists", (event, json) => {
   const fileName = "flb_playlists.json";
   const content = json;
   fs.writeFileSync(path.join(appDataFolder, fileName), content);
-  // event.returnValue = true;
 });
 ipcMain.on("saveRecentSongs", (event, json) => {
   const fileName = "flb_recents.json";
   const content = json;
   fs.writeFileSync(path.join(appDataFolder, fileName), content);
-  // event.returnValue = true;
 });
 
 ipcMain.on("getPlaylists", (event) => {
@@ -558,43 +523,4 @@ function init() {
 
     //file exists
   });
-}
-function getBinaries() {
-  var platform = ffbinaries.detectPlatform();
-
-  return ffbinaries.downloadFiles(
-    ["ffmpeg", "ffprobe"],
-    { platform: platform, quiet: true, destination: appDataFolder },
-    function(err, data) {
-      console.log("Downloading binaries for " + platform + ":");
-      console.log("err", err);
-      console.log("The data from downloading bins is ", data);
-      saveBinaryPaths(err, data);
-    }
-  );
-}
-function saveBinaryPaths(err, data) {
-  if (err) {
-    console.log("Downloads failed.");
-  } else {
-    const fileName = "ffPaths.json";
-    const ffmpegPath = path.join(appDataFolder, "ffmpeg");
-    const ffprobePath = path.join(appDataFolder, "ffprobe");
-
-    const content = {
-      ffmpeg: ffmpegPath,
-      ffprobe: ffprobePath,
-    };
-    fs.writeFileSync(
-      path.join(appDataFolder, fileName),
-      JSON.stringify(content)
-    );
-    console.log("Downloads successful.");
-
-    ffmpeg.setFfmpegPath(ffmpegPath);
-    ffmpeg.setFfprobePath(ffprobePath);
-  }
-}
-function exists(path) {
-  return fs.existsSync(path);
 }
