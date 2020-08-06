@@ -1,56 +1,51 @@
 :root {
-  --base_bg: #1c002f;
-  --nav_bg: var(--light_pink);
-  --snippet_bg: var(--dim_magenta);
-  --green: #34aa71;
-  --red: #d70064;
-  --light_magenta: rgba(221, 0, 233, 0.247);
-  --dim_magenta: #c100c4;
-  --lighter: rgba(235, 235, 235, 0.09);
-  --purple: #9900ff;
-  --dark_magenta: #320036;
   --base-one: 255;
   --base-two: 0;
-  --base-three: 1;
-  --bg-color: rgba(calc(var(--base-one)-227), 0, calc(var(--base-three) + 46));
-  --primary: rgba(var(--base-one), var(--base-two), var(--base-three), 1);
-  --primary-faint: rgba(
-    calc(var(--base-one)-190),
-    var(--base-two),
-    calc(var(--base-three) - 175),
-    1
-  );
-  --card-primary: rgba(
-    calc(var(--base-one) - 203),
-    calc(var(--base-two) + 3),
-    calc(var(--base-three) + 68),
-    1
-  );
-  --card-hover: rgba(
-    calc(var(--base-one) - 159),
-    calc(var(--base-two) + 10),
-    calc(var(--base-three) + 108),
-    1
-  );
+  --base-three: 255;
+  user-select: none;
+  touch-action: none;
 }
 .theme-magenta {
   --base_bg: #000000;
 }
 
 .vMenu {
-  background: var(--primary-faint);
+  background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.15);
   border-radius: 10px;
+  width: 50px;
+  height: 300px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
-.tooltip {
-  background: var(--primary);
+.v-tooltip {
+  background: rgb(var(--base-one), var(--base-two), var(--base-three));
   border-radius: 15px;
   color: white;
 }
-.activeIndicator {
-  background: var(--primary);
+.activeTabIndicator {
+  background: rgb(var(--base-one), var(--base-two), var(--base-three));
   border-radius: 15px;
+  width: 10px;
+  height: 40px;
 }
 .view {
   width: 100vw;
   height: 100vh;
+  background: rgb(
+    calc(var(--base-one) - 190),
+    var(--base-two),
+    calc(var(--base-three) - 175)
+  );
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  justify-content: space-between;
+}
+.f-card {
+  background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.2);
+  width: 500px;
+}
+.f-card:hover {
+  background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.4);
+  cursor: pointer;
 }
