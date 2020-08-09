@@ -52,7 +52,7 @@ export default {
   },
   mounted() {
     const audio = document.querySelector("#myAudio");
-    console.clear();
+    // console.clear();
     setTimeout(() => {
       document.querySelector("#splash").classList.add("fadeOutLeft");
     }, 4000);
@@ -135,10 +135,14 @@ body {
   height: 5px;
 }
 ::-webkit-scrollbar-track-piece {
-  background: rgb(0, 0, 0);
+  background: rgb(
+    calc(var(--base-one) - 190),
+    var(--base-two),
+    calc(var(--base-three) - 175)
+  );
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, rgb(0, 102, 255), rgb(47, 255, 168));
+  background: rgb(255, 255, 255);
   border-radius: 10px;
 }
 #particles-js {

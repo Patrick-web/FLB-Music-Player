@@ -33,7 +33,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
-  padding-left: 20px;
+  margin-top: 10px;
   width: 100%;
   .tabTitle {
     font-size: 2.1rem;
@@ -43,7 +43,6 @@ export default {
   }
   .searchBar {
     position: relative;
-    margin-right: 32px;
   }
   img:hover {
     cursor: pointer;
@@ -54,7 +53,7 @@ export default {
     left: -10%;
     transform: scale(1) translateY(-50%);
     width: 20px;
-    transition: 0.1s ease-in-out;
+    transition: 0.1s linear;
   }
   .clearSearch {
     position: absolute;
@@ -62,7 +61,7 @@ export default {
     right: 2%;
     transform: scale(0) translateY(-50%);
     width: 20px;
-    transition: 0.1s ease-in-out;
+    transition: 0.2s linear;
   }
   input {
     padding: 5px;
@@ -83,8 +82,7 @@ export default {
   }
   input:focus ~ .magnifier {
     left: 100%;
-    opacity: 0;
-    transform: translateY(-50%);
+    transform: scale(0) translateY(-50%);
   }
   input:focus ~ .clearSearch {
     transform: scale(1) translateY(-50%);

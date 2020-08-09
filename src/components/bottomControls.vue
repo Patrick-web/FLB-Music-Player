@@ -3,7 +3,7 @@
     <img id="stars" @click="showFeatures" src="@/assets/stars.svg" alt="" />
     <features />
     <div class="visulizerArea" style="z-index:-1">
-      <visualizer />
+      <!-- <visualizer /> -->
     </div>
     <div class="controls-cont">
       <audio src="@/assets/song.mp3" id="myAudio"></audio>
