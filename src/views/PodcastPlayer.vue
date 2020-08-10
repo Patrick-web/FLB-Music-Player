@@ -2,6 +2,7 @@
   <div class="view podcasts">
     <TabSwitcher />
     <div class="contentView">
+      <PodcastPage />
       <Titlebar />
       <Genres />
       <div class="genresCont">
@@ -11,6 +12,7 @@
             <Scard
               v-for="podcast in genre.podcasts"
               :key="podcast.id"
+              :podID="podcast.id"
               :podName="podcast.title"
               :podDescription="podcast.description"
               :podThumbnail="podcast.image"
@@ -30,6 +32,7 @@ import Titlebar from "@/components/forPodcasts/titlebar.vue";
 import Scard from "@/components/forPodcasts/SquareCard.vue";
 import PlayingPane from "@/components/forPodcasts/PlayingPane.vue";
 import Genres from "@/components/forPodcasts/Genres.vue";
+import PodcastPage from "@/components/forPodcasts/PodcastPage.vue";
 import { mapGetters, mapActions } from "vuex";
 export default {
   mounted() {
@@ -63,27 +66,7 @@ export default {
   },
   computed: mapGetters(["dataToRender"]),
   data() {
-    return {
-      sampleData: [
-        {
-          genre: "Sample Genre",
-          podcasts: [
-            {
-              podName: "Syntax.fm",
-              desc: "Too lazy to write anything relevant",
-            },
-            {
-              podName: "CodeNewBie",
-              desc: "Too lazy to write anything relevant",
-            },
-            {
-              podName: "StackOverFlow",
-              desc: "Too lazy to write anything relevant",
-            },
-          ],
-        },
-      ],
-    };
+    return {};
   },
   components: {
     TabSwitcher,
@@ -91,6 +74,7 @@ export default {
     Scard,
     PlayingPane,
     Genres,
+    PodcastPage,
   },
 };
 </script>
@@ -115,6 +99,8 @@ export default {
 .contentView {
   height: 100vh;
   width: 67.8vw;
+  position: relative;
+  overflow: hidden;
 }
 .genrePods {
   display: grid;

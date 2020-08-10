@@ -2,7 +2,11 @@
   <div class="searchTitlebar">
     <div class="tabTitle">Explore</div>
     <div class="searchBar">
-      <input id="podSearch" />
+      <input
+        v-on:keyup.enter="search"
+        id="podSearch"
+        placeholder="Search for Podcasts"
+      />
       <img class="magnifier" src="@/assets/forPodcasts/search.png" alt="" />
       <img
         @click="clearSearchResults"
@@ -15,8 +19,14 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 export default {
   methods: {
+    ...mapActions(["searchPodcast"]),
+    search() {
+      const query = document.querySelector("#podSearch").value;
+      this.searchPodcast(query);
+    },
     //TODO: Make this function work
     clearSearchResults() {
       console.log(document.querySelector("#podSearch").value);
@@ -75,6 +85,7 @@ export default {
     width: 250px;
     transition: 0.1s cubic-bezier(0.075, 0.82, 0.165, 1);
   }
+
   input:focus {
     width: 400px;
     border-radius: 3px;
@@ -91,5 +102,8 @@ export default {
     background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.25);
     cursor: pointer;
   }
+}
+input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 </style>

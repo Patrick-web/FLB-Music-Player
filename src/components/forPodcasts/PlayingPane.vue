@@ -20,24 +20,16 @@
       </div>
     </div>
     <div class="content">
-      <div class="logoArea"></div>
-      <h4 id="playing-episode">Episode Lorem ipsum dolor sit amet. Name</h4>
+      <div class="logoArea">
+        <img :src="currentlyPlayingEpisode.thumbnail" alt="" />
+      </div>
+      <br />
+      <h4 id="playing-episode">{{ currentlyPlayingEpisode.title }}</h4>
       <h6 id="playing-podName">Podcast Name</h6>
       <br />
       <h3>Show Notes</h3>
       <p class="showNotes">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Rem aperiam
-        odit atque iste. Repellat obcaecati illum eaque iste aspernatur esse
-        tempora. Distinctio, incidunt maiores voluptates nihil sint molestias
-        deserunt optio obcaecati animi non suscipit repellat saepe consectetur
-        amet consequatur veniam modi. Itaque similique aperiam, temporibus saepe
-        voluptatibus exercitationem in facilis. Lorem ipsum dolor sit amet,
-        consectetur adipisicing elit. Eius quia nemo reprehenderit iste, dolorum
-        velit eveniet at soluta asperiores molestiae adipisci iure possimus
-        quod, quas illo, tempora sunt nam omnis? Lorem ipsum dolor sit amet
-        consectetur adipisicing elit. Earum porro debitis perspiciatis quis quia
-        harum. Nulla quaerat magnam necessitatibus? Aperiam accusamus quidem
-        quisquam! Amet eveniet laboriosam accusamus architecto fugiat nostrum?
+        {{ currentlyPlayingEpisode.description }}
       </p>
     </div>
     <button id="subBt">Subscribed</button>
@@ -45,7 +37,11 @@
 </template>
 
 <script>
-export default {};
+import { mapGetters } from "vuex";
+
+export default {
+  computed: mapGetters(["currentlyPlayingEpisode"]),
+};
 </script>
 
 <style lang="scss">
@@ -118,10 +114,12 @@ export default {};
   .logoArea {
     width: 80%;
     height: 200px;
-    background: white;
     color: white;
     margin: auto;
     margin-bottom: 20px;
+    img {
+      width: 100%;
+    }
   }
   .showNotes {
     font-weight: 300;

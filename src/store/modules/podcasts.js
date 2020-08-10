@@ -4,6 +4,8 @@ const state = {
   bestPodcasts: [],
   curated: [],
   currentGenre: [],
+  currentPodcast: "",
+  currentlyPlayingEpisode: {},
   renderedPodcasts: ["cs"],
   genres: [
     {
@@ -163,12 +165,35 @@ const getters = {
   AllGenres: (state) => state.genres,
   bestPodcasts: (state) => state.bestPodcasts,
   dataToRender: (state) => state.renderedPodcasts,
+  currentPodcast: (state) => state.currentPodcast,
+  currentlyPlayingEpisode: (state) => state.currentlyPlayingEpisode,
 };
 
 const actions = {
   render(data) {
     state.renderedPodcasts.length = 0;
     state.renderedPodcasts = data;
+  },
+  updatePlayingEpisode({ commit }, episode) {
+    state.currentlyPlayingEpisode = episode;
+    console.log(state.currentlyPlayingEpisode);
+  },
+  searchPodcast({ commit }, query) {
+    var config = {
+      method: "get",
+      url: `https://listen-api.listennotes.com/api/v2/typeahead?q=${query}&show_podcasts=1&show_genres=0&safe_mode=0`,
+      headers: {
+        "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
+      },
+    };
+
+    axios(config)
+      .then(function(response) {
+        console.log(response.data);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
   },
   fetchBestPods() {
     actions.render(state.bestPodcasts);
@@ -267,6 +292,36 @@ const actions = {
             console.log(state.cache[`${data.genre}`].podcasts.push(newPod));
           });
         }
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  fetchPodcastData({ commit }, podcastID, nextEpPubDate) {
+    document.body.classList.add("showPodcastData");
+
+    var config = {
+      method: "get",
+      url: `https://listen-api.listennotes.com/api/v2/podcasts/${podcastID}?${nextEpPubDate}&sort=recent_first`,
+      headers: {
+        "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
+      },
+    };
+
+    axios(config)
+      .then(function(response) {
+        console.log(response);
+        const podcast = {
+          name: response.data.title,
+          publisher: response.data.publisher,
+          description: response.data.description,
+          website: response.data.website.match(/.*\?/)[0],
+          thumbnail: response.data.thumbnail,
+          episodes: response.data.episodes,
+          nextEpisodePubDate: response.data.next_episode_pub_date,
+        };
+        state.currentPodcast = podcast;
+        console.log(podcast);
       })
       .catch(function(error) {
         console.log(error);

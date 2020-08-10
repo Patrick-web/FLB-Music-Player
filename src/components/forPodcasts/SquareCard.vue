@@ -1,5 +1,5 @@
 <template>
-  <div class="squareCard">
+  <div @click="fetchPodcastData(podID)" class="squareCard">
     <div @click="expandCard($event)" class="expandArrow"></div>
     <div class="thumbnailArea">
       <img :src="podThumbnail" alt="" />
@@ -7,6 +7,7 @@
     <img id="blurred" :src="podThumbnail" alt="" />
     <div class="cardInfo">
       <div class="infoTitle">{{ podName }}</div>
+      <p style="display:none" id="podID">{{ podID }}</p>
       <br />
       <!-- <div class="infoContent">{{ podDescription }}</div> -->
     </div>
@@ -14,8 +15,13 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 export default {
   methods: {
+    ...mapActions(["fetchPodcastData"]),
+    fetchEpisodes(id) {
+      console.log(id);
+    },
     expandCard(e) {
       const target = e.target.parentElement;
       if (target.classList.contains("expandCard")) {
@@ -27,6 +33,7 @@ export default {
   },
   props: {
     podName: String,
+    podID: String,
     podDescription: String,
     podThumbnail: String,
   },
