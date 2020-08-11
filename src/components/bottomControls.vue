@@ -6,7 +6,7 @@
       <!-- <visualizer /> -->
     </div>
     <div class="controls-cont">
-      <audio src="@/assets/song.mp3" id="myAudio"></audio>
+      <audio src="" id="myAudio"></audio>
       <div class="audioInfo">
         <p id="playingTitle" class="songTitle">Sittin' throwin Rocks</p>
         <!-- <p class="artist">Lexion Beats</p> -->

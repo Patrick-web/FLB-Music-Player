@@ -6,12 +6,23 @@
         v-on:keyup.enter="search"
         id="podSearch"
         placeholder="Search for Podcasts"
+        class="inputElem"
       />
-      <img class="magnifier" src="@/assets/forPodcasts/search.png" alt="" />
+      <img
+        class="iconLeft magnifier"
+        src="@/assets/forPodcasts/search.png"
+        alt=""
+      />
       <img
         @click="clearSearchResults"
         class="clearSearch"
         src="@/assets/forPodcasts/x.png"
+        alt=""
+      />
+      <img
+        @click="clearSearchResults"
+        class="iconLeft clearer"
+        src="@/assets/forPodcasts/back.svg"
         alt=""
       />
     </div>
@@ -22,21 +33,34 @@
 import { mapActions } from "vuex";
 export default {
   methods: {
-    ...mapActions(["searchPodcast"]),
+    ...mapActions(["searchPodcast", "renderDataBeforeSearch"]),
     search() {
       const query = document.querySelector("#podSearch").value;
       this.searchPodcast(query);
     },
     //TODO: Make this function work
     clearSearchResults() {
-      console.log(document.querySelector("#podSearch").value);
+      document.body.classList.remove("searchingState");
       document.querySelector("#podSearch").value = "";
+      this.renderDataBeforeSearch();
+      console.log("Clearing");
     },
   },
 };
 </script>
 
 <style lang="scss">
+.searchingState {
+  .clearer {
+    transform: scale(1.2) translateY(-6px) !important;
+  }
+  .magnifier {
+    transform: scale(0) !important;
+  }
+}
+.fetchingInProgress input {
+  cursor: wait !important;
+}
 .searchTitlebar {
   width: 850px;
   display: flex;
@@ -54,10 +78,15 @@ export default {
   .searchBar {
     position: relative;
   }
+  .fetchingInProgress {
+    img:hover {
+      cursor: wait;
+    }
+  }
   img:hover {
     cursor: pointer;
   }
-  .magnifier {
+  .iconLeft {
     position: absolute;
     top: 50%;
     left: -10%;
@@ -65,8 +94,13 @@ export default {
     width: 20px;
     transition: 0.1s linear;
   }
+  .clearer {
+    transform: scale(0);
+    left: -15%;
+  }
   .clearSearch {
     position: absolute;
+    z-index: 3;
     top: 50%;
     right: 2%;
     transform: scale(0) translateY(-50%);
@@ -95,9 +129,14 @@ export default {
     left: 100%;
     transform: scale(0) translateY(-50%);
   }
+  input:focus ~ .clearer {
+    left: -10%;
+    display: none;
+  }
   input:focus ~ .clearSearch {
     transform: scale(1) translateY(-50%);
   }
+
   input:hover {
     background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.25);
     cursor: pointer;

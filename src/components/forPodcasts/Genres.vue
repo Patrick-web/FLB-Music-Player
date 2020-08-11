@@ -68,6 +68,18 @@ export default {
 </script>
 
 <style lang="scss">
+.fetchingInProgress .genre {
+  cursor: wait !important;
+}
+.fetchingInProgress .activeGenre {
+  cursor: wait !important;
+}
+.searchingState {
+  .podGenres {
+    height: 0px;
+    padding: 0px;
+  }
+}
 .podGenres {
   overflow: hidden;
   height: 20px;
@@ -79,6 +91,7 @@ export default {
   padding-bottom: 9px;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
+  transition: 0.2s ease;
 }
 .gWrapper {
   overflow: auto;

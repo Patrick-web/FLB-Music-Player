@@ -1,5 +1,8 @@
 <template>
-  <div class="playingPane">
+  <div class="playingPane animated faster">
+    <Controls />
+    <audio id="podcastAudioTag"></audio>
+
     <div class="grid2">
       <p>Playing</p>
       <div class="podDownBt">
@@ -24,8 +27,12 @@
         <img :src="currentlyPlayingEpisode.thumbnail" alt="" />
       </div>
       <br />
-      <h4 id="playing-episode">{{ currentlyPlayingEpisode.title }}</h4>
-      <h6 id="playing-podName">Podcast Name</h6>
+      <h4 id="playing-episode">
+        {{ currentlyPlayingEpisode.title }}
+      </h4>
+      <h6 @click="showCurrentlyPlayingPodcast" id="playing-podName">
+        {{ currentlyPlayingEpisode.podcastName }}
+      </h6>
       <br />
       <h3>Show Notes</h3>
       <p class="showNotes">
@@ -37,17 +44,42 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
+import Controls from "@/components/forPodcasts/Controls.vue";
 
 export default {
   computed: mapGetters(["currentlyPlayingEpisode"]),
+  methods: {
+    ...mapActions(["showCurrentlyPlayingPodcast"]),
+    updateProgress() {
+      const audio = document.querySelector("#podcastAudioTag");
+      const progressBar = document.querySelector(".seekProgress");
+      setInterval(() => {
+        const percent = Math.floor(audio.currentTime) / window.episodeDuration;
+        progressBar.style.height = `${Math.floor(percent * 100)}%`;
+      }, 1000);
+    },
+  },
+  mounted() {
+    this.updateProgress();
+  },
+  components: {
+    Controls,
+  },
 };
 </script>
 
 <style lang="scss">
+.episodeIsPlaying {
+  .playingPane {
+    opacity: 1;
+  }
+}
 .playingPane {
   position: relative;
   height: 100vh;
+  z-index: 8;
+  opacity: 0;
   // min-width: 500px;
   #playing-episode {
     font-size: 1.2rem;
@@ -57,9 +89,19 @@ export default {
   }
   #playing-podName {
     font-size: 1rem;
-    font-weight: 400;
+    font-weight: 500;
     margin-top: 5px;
     margin-bottom: 5px;
+    background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.2);
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 20px;
+    margin-right: 10px;
+  }
+  #playing-podName:hover {
+    cursor: pointer;
+    background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.3);
   }
   #subBt {
     color: white;
@@ -123,7 +165,7 @@ export default {
   }
   .showNotes {
     font-weight: 300;
-    max-height: 300px;
+    max-height: 250px;
     overflow-y: scroll;
     padding-right: 5px;
   }

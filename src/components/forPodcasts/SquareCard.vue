@@ -1,5 +1,5 @@
 <template>
-  <div @click="fetchPodcastData(podID)" class="squareCard">
+  <div @click="fetch($event, podID)" class="squareCard">
     <div @click="expandCard($event)" class="expandArrow"></div>
     <div class="thumbnailArea">
       <img :src="podThumbnail" alt="" />
@@ -19,8 +19,17 @@ import { mapActions } from "vuex";
 export default {
   methods: {
     ...mapActions(["fetchPodcastData"]),
-    fetchEpisodes(id) {
-      console.log(id);
+    fetch(e, podID) {
+      /* if it is loaded then don't fetch 
+  if its not loaded fetch and mark it as loaded
+*/
+      const target = e.currentTarget;
+      if (!target.classList.contains("loadedPodcast")) {
+        this.fetchPodcastData(podID);
+        target.classList.add("loadedPodcast");
+        console.log("Not fetched yet");
+      }
+      document.body.classList.add("showPodcastData");
     },
     expandCard(e) {
       const target = e.target.parentElement;
@@ -41,6 +50,9 @@ export default {
 </script>
 
 <style lang="scss">
+.fetchingInProgress .squareCard {
+  cursor: wait !important;
+}
 .squareCard {
   background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.15);
   border-radius: 10px;

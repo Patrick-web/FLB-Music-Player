@@ -129,6 +129,9 @@ body {
   overflow: hidden;
   background: black;
 }
+.fetchingInProgress {
+  cursor: wait;
+}
 ::-webkit-scrollbar {
   background: pink;
   width: 5px;

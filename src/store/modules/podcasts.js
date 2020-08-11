@@ -4,9 +4,13 @@ const state = {
   bestPodcasts: [],
   curated: [],
   currentGenre: [],
-  currentPodcast: "",
+  currentPodcast: {},
+  currentlyPlayingPodcast: {},
   currentlyPlayingEpisode: {},
-  renderedPodcasts: ["cs"],
+  currentPodcastName: "",
+  searchResults: {},
+  renderedPodcasts: [],
+  renderedBeforeSearch: [],
   genres: [
     {
       id: 168,
@@ -174,11 +178,27 @@ const actions = {
     state.renderedPodcasts.length = 0;
     state.renderedPodcasts = data;
   },
+  renderDataBeforeSearch() {
+    console.log(state.renderedBeforeSearch);
+    state.renderedPodcasts = state.renderedBeforeSearch;
+  },
+  showCurrentlyPlayingPodcast({ commit }) {
+    state.currentPodcast = state.currentlyPlayingPodcast;
+    document.body.classList.add("showPodcastData");
+  },
   updatePlayingEpisode({ commit }, episode) {
+    console.log(episode);
     state.currentlyPlayingEpisode = episode;
-    console.log(state.currentlyPlayingEpisode);
+    state.currentlyPlayingPodcast = state.currentPodcast;
+    // console.log(state.currentlyPlayingEpisode);
   },
   searchPodcast({ commit }, query) {
+    document.body.classList.add("fetchingInProgress");
+    if (!document.body.classList.contains("searchingState")) {
+      state.renderedBeforeSearch = [...state.renderedPodcasts];
+    }
+    console.log("searching for");
+    document.body.classList.add("searchingState");
     var config = {
       method: "get",
       url: `https://listen-api.listennotes.com/api/v2/typeahead?q=${query}&show_podcasts=1&show_genres=0&safe_mode=0`,
@@ -189,13 +209,29 @@ const actions = {
 
     axios(config)
       .then(function(response) {
-        console.log(response.data);
+        document.body.classList.remove("fetchingInProgress");
+
+        console.log(response.data.podcasts);
+        const results = {
+          id: Date.now(),
+          genre: "Search Results",
+          podcasts: response.data.podcasts,
+        };
+        results.podcasts.forEach((podcast) => {
+          podcast["title"] = podcast.title_original;
+        });
+        console.log(results);
+        const resultArray = [results];
+        actions.render(resultArray);
       })
       .catch(function(error) {
+        document.body.classList.remove("fetchingInProgress");
+
         console.log(error);
       });
   },
   fetchBestPods() {
+    document.body.classList.add("fetchingInProgress");
     actions.render(state.bestPodcasts);
     const selectedCategories = [
       state.genres[0],
@@ -215,6 +251,8 @@ const actions = {
       };
       axios(config)
         .then(function(response) {
+          document.body.classList.remove("fetchingInProgress");
+
           const data = {
             id: response.data.id,
             genre: response.data.name,
@@ -230,11 +268,15 @@ const actions = {
           state.bestPodcasts.push(trimmedDownGenre);
         })
         .catch(function(error) {
+          document.body.classList.remove("fetchingInProgress");
+
           console.log(error);
         });
     });
   },
   fetchCuratedPods() {
+    document.body.classList.add("fetchingInProgress");
+
     actions.render(state.curated);
     var config = {
       method: "get",
@@ -246,6 +288,8 @@ const actions = {
 
     axios(config)
       .then(function(response) {
+        document.body.classList.remove("fetchingInProgress");
+
         console.log(response);
         response.data.curated_lists.forEach((list) => {
           const data = {
@@ -257,12 +301,14 @@ const actions = {
         });
       })
       .catch(function(error) {
+        document.body.classList.remove("fetchingInProgress");
+
         console.log(error);
       });
   },
   fetchByGenre({ commit }, page) {
-    console.log(page);
-    console.log(window.currentGenreID);
+    document.body.classList.add("fetchingInProgress");
+
     if (page == 1) {
       actions.render(state.currentGenre);
     }
@@ -276,6 +322,8 @@ const actions = {
 
     axios(config)
       .then(function(response) {
+        document.body.classList.remove("fetchingInProgress");
+
         // console.log(?response);
         const data = {
           id: response.data.id,
@@ -294,10 +342,13 @@ const actions = {
         }
       })
       .catch(function(error) {
+        document.body.classList.remove("fetchingInProgress");
+
         console.log(error);
       });
   },
   fetchPodcastData({ commit }, podcastID, nextEpPubDate) {
+    document.body.classList.add("fetchingInProgress");
     document.body.classList.add("showPodcastData");
 
     var config = {
@@ -310,24 +361,53 @@ const actions = {
 
     axios(config)
       .then(function(response) {
+        document.body.classList.remove("fetchingInProgress");
+
         console.log(response);
         const podcast = {
           name: response.data.title,
+          title: response.data.title,
           publisher: response.data.publisher,
           description: response.data.description,
-          website: response.data.website.match(/.*\?/)[0],
+          website:
+            response.data.website == null
+              ? ""
+              : response.data.website.match(/.*\?/)[0],
           thumbnail: response.data.thumbnail,
           episodes: response.data.episodes,
           nextEpisodePubDate: response.data.next_episode_pub_date,
         };
+        podcast.episodes.forEach((episode) => {
+          episode.podcastName = podcast.title;
+          episode.formattedDuration = timeFormatter(episode.audio_length_sec);
+        });
         state.currentPodcast = podcast;
-        console.log(podcast);
       })
       .catch(function(error) {
+        document.body.classList.remove("fetchingInProgress");
+
         console.log(error);
       });
   },
 };
+
+function timeFormatter(duration) {
+  // Hours, minutes and seconds
+  var hrs = ~~(duration / 3600);
+  var mins = ~~((duration % 3600) / 60);
+  var secs = ~~duration % 60;
+
+  // Output like "1:01" or "4:03:59" or "123:03:59"
+  var ret = "";
+
+  if (hrs > 0) {
+    ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
+  }
+
+  ret += "" + mins + ":" + (secs < 10 ? "0" : "");
+  ret += "" + secs;
+  return ret;
+}
 
 const mutations = {};
 

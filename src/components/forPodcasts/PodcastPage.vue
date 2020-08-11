@@ -1,6 +1,5 @@
 <template>
   <div class="PodcastPage">
-    <audio id="podcastAudioTag"></audio>
     <img
       class="hidePodcastPage"
       @click="hidePodcastPage"
@@ -33,7 +32,7 @@
                 <img src="@/assets/forPodcasts/download.svg" alt="" />
               </div>
             </div>
-            <p class="eDuration">{{ episode.audio_length_sec }}</p>
+            <p class="eDuration">{{ episode.formattedDuration }}</p>
           </div>
         </div>
       </div>
@@ -61,7 +60,6 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { Howl, Howler } from "howler";
 
 export default {
   computed: mapGetters(["currentPodcast"]),
@@ -73,8 +71,13 @@ export default {
       const audio = document.querySelector("#podcastAudioTag");
       audio.src = episode.audio;
       audio.play();
+      window.episodeDuration = episode.audio_length_sec;
+      console.log(episode.audio_length_sec);
     },
     markAsPlaying(element) {
+      document.body.classList.add("episodeIsPlaying");
+      document.body.classList.add("podcastInPlayingState");
+      document.querySelector(".playingPane").classList.add("slideInRight");
       if (document.querySelector(".playingEpisode")) {
         document
           .querySelector(".playingEpisode")
@@ -100,6 +103,9 @@ export default {
 </script>
 
 <style lang="scss">
+.fetchingInProgress .episodeCard {
+  cursor: wait !important;
+}
 .showPodcastData {
   .PodcastPage {
     top: 0%;
