@@ -68,16 +68,22 @@ export default {
     playEpisode(e, episode) {
       this.updatePlayingEpisode(episode);
       this.markAsPlaying(e.currentTarget);
-      const audio = document.querySelector("#podcastAudioTag");
-      audio.src = episode.audio;
-      audio.play();
-      window.episodeDuration = episode.audio_length_sec;
-      console.log(episode.audio_length_sec);
+      setTimeout(() => {
+        const audio = document.querySelector("#podcastAudioTag");
+        console.log(audio);
+        audio.src = episode.audio;
+        audio.play();
+        window.episodeDuration = episode.audio_length_sec;
+        console.log(episode.audio_length_sec);
+      }, 100);
     },
     markAsPlaying(element) {
       document.body.classList.add("episodeIsPlaying");
       document.body.classList.add("podcastInPlayingState");
-      document.querySelector(".playingPane").classList.add("slideInRight");
+      if (document.querySelector(".playingPane")) {
+        document.querySelector(".playingPane").classList.add("slideInRight");
+      }
+
       if (document.querySelector(".playingEpisode")) {
         document
           .querySelector(".playingEpisode")
@@ -122,7 +128,7 @@ export default {
   border-top-right-radius: 20px;
   position: absolute;
   top: 95%;
-  z-index: 5;
+  z-index: 7;
   height: 100vh;
   width: 100%;
   background: rgba(

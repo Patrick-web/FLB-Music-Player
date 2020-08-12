@@ -2,15 +2,15 @@
   <div class="vMenu">
     <div class="activeTabIndicator"></div>
     <div @click="switchTab($event, 'subscribed')" class="vmenu-group">
-      <img src="@/assets/forPodcasts/DoubleBolt.svg" alt="" />
+      <img src="@/assets/forPodcasts/DoubleBolt.svg" alt />
       <p class="v-tooltip">Subscribed</p>
     </div>
     <div @click="switchTab($event, 'explorer')" class="tabActive vmenu-group">
-      <img style="width:38px" src="@/assets/forPodcasts/explore.png" alt="" />
+      <img style="width:38px" src="@/assets/forPodcasts/explore.png" alt />
       <p class="v-tooltip">Explore</p>
     </div>
     <div @click="switchTab($event, 'downloaded')" class="vmenu-group">
-      <img src="@/assets/forPodcasts/download.svg" alt="" />
+      <img src="@/assets/forPodcasts/download.svg" alt />
       <p class="v-tooltip">Downloaded</p>
     </div>
   </div>
@@ -20,19 +20,24 @@
 export default {
   methods: {
     switchTab(e, tab) {
+      document.body.classList.remove("showPodcastData");
       const indicator = document.querySelector(".activeTabIndicator");
       const element = e.currentTarget;
+      const pagesWrapper = document.querySelector(".pagesWrapper");
       document.querySelector(".tabActive").classList.remove("tabActive");
       element.classList.add("tabActive");
       switch (tab) {
         case "subscribed":
           indicator.style.top = "5%";
+          pagesWrapper.style.top = "0%";
           break;
         case "explorer":
           indicator.style.top = "46%";
+          pagesWrapper.style.top = "-100%";
           break;
         case "downloaded":
           indicator.style.top = "84%";
+          pagesWrapper.style.top = "-200%";
           break;
         default:
           break;

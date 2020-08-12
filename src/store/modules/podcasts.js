@@ -6,11 +6,20 @@ const state = {
   currentGenre: [],
   currentPodcast: {},
   currentlyPlayingPodcast: {},
-  currentlyPlayingEpisode: {},
+  currentlyPlayingEpisode: {
+    thumbnail: "sample.jpg",
+    title: "sample",
+    description: "samlple",
+    podcast: {
+      isSubscribed: false,
+      name: "sample",
+    },
+  },
   currentPodcastName: "",
   searchResults: {},
   renderedPodcasts: [],
   renderedBeforeSearch: [],
+  subscribed: [],
   genres: [
     {
       id: 168,
@@ -171,12 +180,25 @@ const getters = {
   dataToRender: (state) => state.renderedPodcasts,
   currentPodcast: (state) => state.currentPodcast,
   currentlyPlayingEpisode: (state) => state.currentlyPlayingEpisode,
+  subscribed: (state) => state.subscribed,
 };
 
 const actions = {
   render(data) {
     state.renderedPodcasts.length = 0;
     state.renderedPodcasts = data;
+  },
+  flickerRender() {
+    state.currentlyPlayingEpisode = {
+      thumbnail: "sample.jpg",
+      title: "sample",
+      description: "samlple",
+      podcast: {
+        isSubscribed: false,
+        name: "sample",
+      },
+    };
+    console.log("flickered");
   },
   renderDataBeforeSearch() {
     console.log(state.renderedBeforeSearch);
@@ -188,9 +210,86 @@ const actions = {
   },
   updatePlayingEpisode({ commit }, episode) {
     console.log(episode);
+    console.log("current Podcast is");
+    console.log(state.currentlyPlayingPodcast);
+
     state.currentlyPlayingEpisode = episode;
     state.currentlyPlayingPodcast = state.currentPodcast;
-    // console.log(state.currentlyPlayingEpisode);
+  },
+  subscribeToPodcast({ commit }, podcast) {
+    let alreadySubscribed = false;
+    state.subscribed.forEach((sub) => {
+      if (podcast.podId === sub.podId) {
+        alreadySubscribed = true;
+      }
+    });
+    if (!alreadySubscribed) {
+      podcast["isSubscribed"] = true;
+      console.log(podcast);
+      state.subscribed.push(podcast);
+      actions.persistSubscriptionsToStorage();
+    }
+  },
+  unSubscribeToPodcast({ commit }, podID) {
+    state.subscribed = state.subscribed.filter(
+      (podcast) => podcast.podId != podID
+    );
+    actions.persistSubscriptionsToStorage();
+  },
+  unSubscribeFromPlayingPod() {
+    state.currentlyPlayingEpisode.podcast.isSubscribed = false;
+  },
+  updateRender({ commit }, { genreIndex, podcastIndex, action }) {
+    if (action === "sub") {
+      state.renderedPodcasts[genreIndex].podcasts[podcastIndex][
+        "isSubscribed"
+      ] = true;
+    } else {
+      if (state.renderedPodcasts[genreIndex].podcasts) {
+        state.renderedPodcasts[genreIndex].podcasts[podcastIndex][
+          "isSubscribed"
+        ] = false;
+      }
+    }
+  },
+  updateRenderAfterFetch() {
+    state.renderedPodcasts.forEach((genre) => {
+      genre.podcasts.forEach((renderedPod) => {
+        state.subscribed.forEach((sub) => {
+          if (sub.podId == renderedPod.id) {
+            renderedPod["isSubscribed"] = true;
+            console.log(renderedPod.title);
+          }
+        });
+      });
+    });
+  },
+  persistSubscriptionsToStorage() {
+    localStorage.setItem(
+      "subscribedPodcasts",
+      JSON.stringify(state.subscribed)
+    );
+  },
+  loadedSubscribedFromStorage() {
+    const subscribed = JSON.parse(localStorage.getItem("subscribedPodcasts"));
+    if (subscribed) state.subscribed = subscribed;
+  },
+  updateSubscriptionStatus(podcasts) {
+    podcasts.forEach((podcast) => {
+      state.subscribed.forEach((sub) => {
+        if (sub.podId === podcast.id) {
+          console.log("subscribed");
+          console.log(podcast.title);
+          podcast["isSubscribed"] = true;
+        } else {
+          console.log("not subscribed");
+          // console.log(podcast.title);
+          podcast["isSubscribed"] = false;
+        }
+        console.log("-----Check Done-----");
+      });
+    });
+    return podcasts;
   },
   searchPodcast({ commit }, query) {
     document.body.classList.add("fetchingInProgress");
@@ -217,12 +316,14 @@ const actions = {
           genre: "Search Results",
           podcasts: response.data.podcasts,
         };
+        console.log(results.podcasts);
         results.podcasts.forEach((podcast) => {
           podcast["title"] = podcast.title_original;
         });
         console.log(results);
         const resultArray = [results];
         actions.render(resultArray);
+        actions.updateRenderAfterFetch();
       })
       .catch(function(error) {
         document.body.classList.remove("fetchingInProgress");
@@ -266,6 +367,7 @@ const actions = {
             podcasts: data.podcasts.splice(0, 3),
           };
           state.bestPodcasts.push(trimmedDownGenre);
+          actions.updateRenderAfterFetch();
         })
         .catch(function(error) {
           document.body.classList.remove("fetchingInProgress");
@@ -298,6 +400,7 @@ const actions = {
             podcasts: list.podcasts,
           };
           state.curated.push(data);
+          actions.updateRenderAfterFetch();
         });
       })
       .catch(function(error) {
@@ -340,6 +443,7 @@ const actions = {
             console.log(state.cache[`${data.genre}`].podcasts.push(newPod));
           });
         }
+        actions.updateRenderAfterFetch();
       })
       .catch(function(error) {
         document.body.classList.remove("fetchingInProgress");
@@ -365,6 +469,7 @@ const actions = {
 
         console.log(response);
         const podcast = {
+          podId: response.data.id,
           name: response.data.title,
           title: response.data.title,
           publisher: response.data.publisher,
@@ -377,15 +482,29 @@ const actions = {
           episodes: response.data.episodes,
           nextEpisodePubDate: response.data.next_episode_pub_date,
         };
+        var isSubscribed = false;
+        state.subscribed.forEach((sub) => {
+          if (sub.podId == podcast.podId) {
+            isSubscribed = true;
+          }
+        });
         podcast.episodes.forEach((episode) => {
-          episode.podcastName = podcast.title;
           episode.formattedDuration = timeFormatter(episode.audio_length_sec);
+          episode.podcast = {
+            name: podcast.title,
+            podId: podcast.podId,
+            thumbnail: podcast.thumbnail,
+            nextEpisodePubDate: podcast.nextEpisodePubDate,
+            isSubscribed: isSubscribed,
+          };
         });
         state.currentPodcast = podcast;
       })
       .catch(function(error) {
         document.body.classList.remove("fetchingInProgress");
-
+        document
+          .querySelector(".loadedPodcast")
+          .classList.remove("loadedPodcast");
         console.log(error);
       });
   },

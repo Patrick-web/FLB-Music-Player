@@ -4,12 +4,12 @@
       <img
         class="playControl podPlay"
         src="@/assets/forPodcasts/triangle.svg"
-        alt=""
+        alt
       />
       <img
         class="playControl podPause"
         src="@/assets/forPodcasts/pause.svg"
-        alt=""
+        alt
       />
     </div>
     <div @click="seek($event)" class="seekBar">
@@ -32,19 +32,19 @@
         </div>
       </div>
     </div>
-    <div @click="seekForward" class="seekWrapper ">
+    <div @click="seekForward" class="seekWrapper">
       <img
         class="seekBt seekForward"
         src="@/assets/forPodcasts/arrowSeek.svg"
-        alt=""
+        alt
       />
       <p>30</p>
     </div>
-    <div @click="seekBack" class="seekWrapper ">
+    <div @click="seekBack" class="seekWrapper">
       <img
         class="seekBt seekBack"
         src="@/assets/forPodcasts/arrowSeek.svg"
-        alt=""
+        alt
       />
       <p>30</p>
     </div>
@@ -55,7 +55,7 @@
 export default {
   data() {
     return {
-      currentTime: "15:12",
+      currentTime: "00:00:00",
       episodeDuration: "1:15:30",
       hoverTime: "30:59",
     };
@@ -65,7 +65,9 @@ export default {
     const progressInfoCard = document.querySelector(".progressInfoCard");
     const audio = document.querySelector("#podcastAudioTag");
     setInterval(() => {
-      this.currentTime = this.timeFormatter(audio.currentTime);
+      if (audio.currentTime) {
+        this.currentTime = this.timeFormatter(audio.currentTime);
+      }
     }, 1000);
     progressBar.addEventListener("mousemove", (e) => {
       const posY = e.clientY - progressBar.getBoundingClientRect().y;

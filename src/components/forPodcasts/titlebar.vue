@@ -8,22 +8,13 @@
         placeholder="Search for Podcasts"
         class="inputElem"
       />
-      <img
-        class="iconLeft magnifier"
-        src="@/assets/forPodcasts/search.png"
-        alt=""
-      />
-      <img
-        @click="clearSearchResults"
-        class="clearSearch"
-        src="@/assets/forPodcasts/x.png"
-        alt=""
-      />
+      <img class="iconLeft magnifier" src="@/assets/forPodcasts/search.png" alt />
+      <img @click="clearSearchResults" class="clearSearch" src="@/assets/forPodcasts/x.png" alt />
       <img
         @click="clearSearchResults"
         class="iconLeft clearer"
         src="@/assets/forPodcasts/back.svg"
-        alt=""
+        alt
       />
     </div>
   </div>
@@ -44,8 +35,8 @@ export default {
       document.querySelector("#podSearch").value = "";
       this.renderDataBeforeSearch();
       console.log("Clearing");
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -69,12 +60,7 @@ export default {
   margin-bottom: 10px;
   margin-top: 10px;
   width: 100%;
-  .tabTitle {
-    font-size: 2.1rem;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: rgb(var(--base-one), var(--base-two), var(--base-three));
-  }
+
   .searchBar {
     position: relative;
   }
@@ -141,6 +127,12 @@ export default {
     background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.25);
     cursor: pointer;
   }
+}
+.tabTitle {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: rgb(var(--base-one), var(--base-two), var(--base-three));
 }
 input::placeholder {
   color: rgba(255, 255, 255, 0.5);

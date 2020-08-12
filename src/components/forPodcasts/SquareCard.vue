@@ -1,12 +1,33 @@
 <template>
   <div @click="fetch($event, podID)" class="squareCard">
-    <div @click="expandCard($event)" class="expandArrow"></div>
-    <div class="thumbnailArea">
-      <img :src="podThumbnail" alt="" />
+    <div
+      @click.stop="
+        toggleSubscription(
+          $event,
+          podID,
+          podDescription,
+          podThumbnail,
+          podName,
+          isSubscribed,
+          genreIndex,
+          podcastIndex
+        )
+      "
+      v-bind:class="{ issubscribed: isSubscribed }"
+      class="expandArrow"
+    >
+      <img src="@/assets/forPodcasts/DoubleBolt.svg" alt />
+      <div>
+        <span v-if="isSubscribed">Un</span>
+        <span>Subscribe</span>
+      </div>
     </div>
-    <img id="blurred" :src="podThumbnail" alt="" />
+    <div class="thumbnailArea">
+      <img :src="podThumbnail" alt />
+    </div>
+    <img id="blurred" :src="podThumbnail" alt />
     <div class="cardInfo">
-      <div class="infoTitle">{{ podName }}</div>
+      <div class="infoTitle">{{ podName }} {{ isSubscribed }}</div>
       <p style="display:none" id="podID">{{ podID }}</p>
       <br />
       <!-- <div class="infoContent">{{ podDescription }}</div> -->
@@ -18,7 +39,12 @@
 import { mapActions } from "vuex";
 export default {
   methods: {
-    ...mapActions(["fetchPodcastData"]),
+    ...mapActions([
+      "fetchPodcastData",
+      "subscribeToPodcast",
+      "unSubscribeToPodcast",
+      "updateRender"
+    ]),
     fetch(e, podID) {
       /* if it is loaded then don't fetch 
   if its not loaded fetch and mark it as loaded
@@ -26,26 +52,60 @@ export default {
       const target = e.currentTarget;
       if (!target.classList.contains("loadedPodcast")) {
         this.fetchPodcastData(podID);
+        if (document.querySelector(".loadedPodcast")) {
+          document
+            .querySelector(".loadedPodcast")
+            .classList.remove("loadedPodcast");
+        }
         target.classList.add("loadedPodcast");
         console.log("Not fetched yet");
       }
       document.body.classList.add("showPodcastData");
     },
-    expandCard(e) {
-      const target = e.target.parentElement;
-      if (target.classList.contains("expandCard")) {
-        target.classList.remove("expandCard");
+    toggleSubscription(
+      e,
+      podID,
+      podDescription,
+      podThumbnail,
+      podName,
+      isSubscribed,
+      genreIndex,
+      podcastIndex
+    ) {
+      if (isSubscribed) {
+        this.unSubscribeToPodcast(podID);
+        const data = {
+          genreIndex,
+          podcastIndex,
+          action: "unSub"
+        };
+        this.updateRender(data);
       } else {
-        target.classList.add("expandCard");
+        const podcast = {
+          podId: podID,
+          description: podDescription,
+          name: podName,
+          thumbnail: podThumbnail
+        };
+        this.subscribeToPodcast(podcast);
+        const data = {
+          genreIndex,
+          podcastIndex,
+          action: "sub"
+        };
+        this.updateRender(data);
       }
-    },
+    }
   },
   props: {
     podName: String,
     podID: String,
     podDescription: String,
     podThumbnail: String,
-  },
+    isSubscribed: Boolean,
+    genreIndex: Number,
+    podcastIndex: Number
+  }
 };
 </script>
 
@@ -63,20 +123,85 @@ export default {
   overflow: hidden;
   transition: 0.4s ease;
   position: relative;
+  .issubscribed {
+    font-weight: 600;
+    img {
+      margin-left: 115px !important;
+    }
+    div {
+      color: black;
+    }
+    div:hover {
+      background: rgba(
+        var(--base-one),
+        var(--base-two),
+        var(--base-three),
+        1
+      ) !important;
+      color: white;
+    }
+  }
+  .issubscribed:hover {
+    width: 130px !important;
+    img {
+      margin-left: -5px !important;
+    }
+    div {
+      margin-left: -5px;
+      margin-right: -8px;
+    }
+  }
   .expandArrow {
     position: absolute;
-    background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.15);
-    height: 20px;
-    width: 25px;
-    top: 10px;
-    left: 10px;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    transform: rotate(180deg);
+    background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.2);
+    height: 35px;
+    width: 35px;
+    top: 5px;
+    left: 5px;
     transition: 0.2s ease;
     border-radius: 20px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    overflow: hidden;
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.493);
+    div {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      padding-right: 10px;
+      padding-left: 5px;
+      transition: 0.2s ease;
+    }
+    div:hover {
+      background: rgba(
+        var(--base-one),
+        var(--base-two),
+        var(--base-three),
+        0.3
+      );
+    }
+    img {
+      width: 18px;
+      margin-left: 95px;
+      margin-right: 10px;
+    }
+    p {
+      background: black;
+    }
   }
   .expandArrow:hover {
-    cursor: zoom-in;
+    width: 120px;
+    div {
+      margin-left: -5px;
+      margin-right: -12px;
+    }
+    img {
+      margin-left: 0px !important;
+    }
   }
   .thumbnailArea {
     max-height: 11vw;
@@ -119,11 +244,15 @@ export default {
   transform: scale(1.03) rotateX(2deg) rotateY(2deg) translateZ(100px);
   cursor: pointer;
   .expandArrow {
-    background: rgb(var(--base-one), var(--base-two), var(--base-three));
+    background: black;
+    opacity: 1;
+  }
+  .issubscribed {
+    background: white !important;
   }
   .thumbnailArea {
     img {
-      transform: rotate(2deg) scale(1.02);
+      transform: rotate(2deg) scale(1.03);
     }
   }
 }

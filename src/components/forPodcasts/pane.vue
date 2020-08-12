@@ -1,6 +1,10 @@
 <template>
   <div class="playingPane animated faster">
-    <Controls />
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex, ad, iste
+    obcaecati expedita minima reprehenderit facilis, quia corrupti dolores
+    tempore cum! Modi, rem ea cumque repellendus maiores nesciunt consequatur
+    asperiores.
+    <!-- <Controls />
     <audio src id="podcastAudioTag"></audio>
 
     <div class="grid2">
@@ -48,7 +52,7 @@
         >Un</span
       >
       Subscribe
-    </button>
+    </button> -->
   </div>
 </template>
 
@@ -99,6 +103,7 @@ export default {
           const percent =
             Math.floor(audio.currentTime) / window.episodeDuration;
           progressBar.style.height = `${Math.floor(percent * 100)}%`;
+          console.log(window.getComputedStyle(progressBar).height);
         }, 1000);
       }
     },
