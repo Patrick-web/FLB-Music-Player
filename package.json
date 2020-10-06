@@ -18,7 +18,7 @@
     "ffbinaries": "^1.1.4",
     "fluent-ffmpeg": "^2.1.2",
     "howler": "^2.2.0",
-    "interactjs": "^1.9.20",
+    "interactjs": "^1.10.0",
     "mime-types": "^2.1.27",
     "move-file": "^2.0.0",
     "music-metadata": "^6.4.0",
