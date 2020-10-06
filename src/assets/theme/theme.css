@@ -1,0 +1,52 @@
+:root {
+  --base-one: 255;
+  --base-two: 0;
+  --base-three: 255;
+  user-select: none;
+  touch-action: none;
+}
+.theme-magenta {
+  --base_bg: #000000;
+}
+
+.vMenu {
+  background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.15);
+  border-radius: 10px;
+  width: 50px;
+  height: 300px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.v-tooltip {
+  background: rgb(var(--base-one), var(--base-two), var(--base-three));
+  border-radius: 15px;
+  color: white;
+}
+.activeTabIndicator {
+  background: rgb(var(--base-one), var(--base-two), var(--base-three));
+  border-radius: 15px;
+  width: 10px;
+  height: 40px;
+}
+.view {
+  max-width: 100vw;
+  height: 100vh;
+  background: rgb(
+    calc(var(--base-one) - 190),
+    var(--base-two),
+    calc(var(--base-three) - 175)
+  );
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.f-card {
+  background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.2);
+  width: 500px;
+}
+.f-card:hover {
+  background: rgba(var(--base-one), var(--base-two), var(--base-three), 0.4);
+  cursor: pointer;
+}

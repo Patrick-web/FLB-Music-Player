@@ -5,29 +5,6 @@
     <progressBar />
     <loading />
     <notification />
-    <div class="info-card">
-      <div class="gif"><img id="gif" src="@/assets/gif.gif" alt="" /></div>
-      <div class="infos">
-        <div class="info-group">
-          <div class="it">Creator</div>
-          <div class="i">Patrick Waweru</div>
-        </div>
-        <div class="info-group">
-          <div class="it">Twitter</div>
-          <div class="i">@PnTX10</div>
-        </div>
-        <div class="info-group">
-          <div class="it">Email</div>
-          <div class="i">pntx200@gmail</div>
-        </div>
-        <div class="info-group">
-          <div class="it">Github</div>
-          <div style="font-size:0.8em" class="i">
-            https://github.com/Patrick-web
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="mixingloader">
       <img
         id="mixLoader"
@@ -37,7 +14,7 @@
       />
       <h2 id="infoText">Mixing...</h2>
     </div>
-
+    <myprofile />
     <div class="grid">
       <div style="position:relative;margin-left:80px">
         <playlist />
@@ -48,15 +25,19 @@
     <bg />
     <mixer id="mixerCont" />
     <converter />
+    <Podcasts />
   </div>
 </template>
 <script>
+import myprofile from "./components/profile.vue";
 import playlist from "./components/playlists.vue";
 import bg from "@/components/particleBg.vue";
 import tracks from "@/views/tracks.vue";
 import start from "@/views/start.vue";
 import mixer from "@/views/mixer.vue";
 import converter from "@/views/converter.vue";
+import Podcasts from "@/views/PodcastPlayer.vue";
+import lyricsMaker from "@/views/lyricsMaker.vue";
 import player from "@/components/bottomControls.vue";
 import loading from "@/components/loading.vue";
 import progressBar from "@/components/progressBar.vue";
@@ -71,7 +52,7 @@ export default {
   },
   mounted() {
     const audio = document.querySelector("#myAudio");
-    console.clear();
+    // console.clear();
     setTimeout(() => {
       document.querySelector("#splash").classList.add("fadeOutLeft");
     }, 4000);
@@ -116,6 +97,7 @@ export default {
   },
   components: {
     bg,
+    myprofile,
     tracks,
     player,
     start,
@@ -123,6 +105,8 @@ export default {
     playlist,
     mixer,
     converter,
+    lyricsMaker,
+    Podcasts,
     progressBar,
     notification,
   },
@@ -131,27 +115,37 @@ export default {
 <style lang="scss">
 @import "./assets/animate.css";
 @import "../node_modules/typeface-roboto/index.css";
+@import "./assets/theme/theme.css";
 
 * {
   margin: 0;
   padding: 0;
   font-family: "Roboto";
 }
+
 body {
   width: 100%;
   height: 100vh;
   overflow: hidden;
   background: black;
 }
+.fetchingInProgress {
+  cursor: wait;
+}
 ::-webkit-scrollbar {
   background: pink;
   width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track-piece {
-  background: rgb(0, 0, 0);
+  background: rgb(
+    calc(var(--base-one) - 190),
+    var(--base-two),
+    calc(var(--base-three) - 175)
+  );
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(rgb(0, 102, 255), rgb(47, 255, 168));
+  background: rgb(255, 255, 255);
   border-radius: 10px;
 }
 #particles-js {

@@ -41,10 +41,8 @@ export default {
       this.hideFeatures();
     },
     showLyricCoverter() {
-      document.querySelector("#lyrics").classList.add("soon");
-      setTimeout(() => {
-        document.querySelector("#lyrics").classList.remove("soon");
-      }, 2000);
+      document.body.classList.add("showLyricsMaker");
+      this.hideFeatures();
     },
   },
 };
@@ -124,11 +122,12 @@ export default {
 #hideFeatures {
   position: absolute;
   left: 142%;
-  bottom: -50px;
-  background: rgba(255, 0, 0, 0.425);
+  bottom: -40px;
+  background: rgb(255, 255, 255);
   padding: 5px;
   z-index: 8;
-  border-radius: 50%;
+  border-radius: 20%;
+  width: 15%;
 }
 #hideFeatures:hover {
   cursor: pointer;

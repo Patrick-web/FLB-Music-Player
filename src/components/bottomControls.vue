@@ -3,10 +3,10 @@
     <img id="stars" @click="showFeatures" src="@/assets/stars.svg" alt="" />
     <features />
     <div class="visulizerArea" style="z-index:-1">
-      <visualizer />
+      <!-- <visualizer /> -->
     </div>
     <div class="controls-cont">
-      <audio src="@/assets/song.mp3" id="myAudio"></audio>
+      <audio src="" id="myAudio"></audio>
       <div class="audioInfo">
         <p id="playingTitle" class="songTitle">Sittin' throwin Rocks</p>
         <!-- <p class="artist">Lexion Beats</p> -->

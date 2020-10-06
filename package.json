@@ -12,10 +12,13 @@
   },
   "main": "background.js",
   "dependencies": {
+    "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "dataurl": "^0.1.0",
     "ffbinaries": "^1.1.4",
     "fluent-ffmpeg": "^2.1.2",
+    "howler": "^2.2.0",
+    "interactjs": "^1.10.0",
     "mime-types": "^2.1.27",
     "move-file": "^2.0.0",
     "music-metadata": "^6.4.0",
