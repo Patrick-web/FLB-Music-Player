@@ -1,4 +1,5 @@
 import axios from "axios";
+import { stat } from "fs";
 const state = {
   cache: {},
   bestPodcasts: [],
@@ -20,6 +21,7 @@ const state = {
   renderedPodcasts: [],
   renderedBeforeSearch: [],
   subscribed: [],
+  newlySubscribedWebsiteUrl: null,
   genres: [
     {
       id: 168,
@@ -181,6 +183,7 @@ const getters = {
   currentPodcast: (state) => state.currentPodcast,
   currentlyPlayingEpisode: (state) => state.currentlyPlayingEpisode,
   subscribed: (state) => state.subscribed,
+  newlySubscribedWebsiteUrl: (state) => state.newlySubscribedWebsiteUrl,
 };
 
 const actions = {
@@ -209,56 +212,51 @@ const actions = {
     document.body.classList.add("showPodcastData");
   },
   updatePlayingEpisode({ commit }, episode) {
-    console.log(episode);
-    console.log("current Podcast is");
-    console.log(state.currentlyPlayingPodcast);
-
     state.currentlyPlayingEpisode = episode;
     state.currentlyPlayingPodcast = state.currentPodcast;
   },
   subscribeToPodcast({ commit }, podcast) {
-    let alreadySubscribed = false;
-    state.subscribed.forEach((sub) => {
-      if (podcast.podId === sub.podId) {
-        alreadySubscribed = true;
-      }
-    });
-    if (!alreadySubscribed) {
-      podcast["isSubscribed"] = true;
-      console.log(podcast);
-      state.subscribed.push(podcast);
-      actions.persistSubscriptionsToStorage();
-    }
+    podcast["isSubscribed"] = true;
+    state.subscribed.push(podcast);
+    state.newlySubscribedWebsiteUrl = podcast.website;
+    actions.persistSubscriptionsToStorage();
   },
-  unSubscribeToPodcast({ commit }, podID) {
+  unSubscribeToPodcast({ commit }, id) {
+    console.log(id);
     state.subscribed = state.subscribed.filter(
-      (podcast) => podcast.podId != podID
+      (podcast) => podcast.podId != id
     );
     actions.persistSubscriptionsToStorage();
   },
   unSubscribeFromPlayingPod() {
     state.currentlyPlayingEpisode.podcast.isSubscribed = false;
   },
-  updateRender({ commit }, { genreIndex, podcastIndex, action }) {
+  updateRender({ commit }, { genreIndex, podcastIndex, action, id }) {
+    console.log(id);
     if (action === "sub") {
       state.renderedPodcasts[genreIndex].podcasts[podcastIndex][
         "isSubscribed"
       ] = true;
+    } else if (action === "unSubscribeFromSubsTab") {
+      console.log("unSubscribeFromSubsTab");
+      state.renderedPodcasts.forEach((podcast) => {
+        if (podcast.podId == id) {
+          podcast.isSubscribed = false;
+        }
+      });
     } else {
-      if (state.renderedPodcasts[genreIndex].podcasts) {
-        state.renderedPodcasts[genreIndex].podcasts[podcastIndex][
-          "isSubscribed"
-        ] = false;
-      }
+      state.renderedPodcasts[genreIndex].podcasts[podcastIndex][
+        "isSubscribed"
+      ] = false;
     }
   },
-  updateRenderAfterFetch() {
+  updateSubscriptionAfterFetch() {
     state.renderedPodcasts.forEach((genre) => {
       genre.podcasts.forEach((renderedPod) => {
         state.subscribed.forEach((sub) => {
           if (sub.podId == renderedPod.id) {
             renderedPod["isSubscribed"] = true;
-            console.log(renderedPod.title);
+            // console.log(renderedPod.title);
           }
         });
       });
@@ -323,7 +321,7 @@ const actions = {
         console.log(results);
         const resultArray = [results];
         actions.render(resultArray);
-        actions.updateRenderAfterFetch();
+        actions.updateSubscriptionAfterFetch();
       })
       .catch(function(error) {
         document.body.classList.remove("fetchingInProgress");
@@ -332,126 +330,151 @@ const actions = {
       });
   },
   fetchBestPods() {
-    document.body.classList.add("fetchingInProgress");
     actions.render(state.bestPodcasts);
-    const selectedCategories = [
-      state.genres[0],
-      state.genres[2],
-      state.genres[9],
-      state.genres[16],
-      state.genres[17],
-    ];
+    const cachedPods = JSON.parse(localStorage.getItem("top"));
+    if (!cachedPods) {
+      document.body.classList.add("fetchingInProgress");
+      const selectedCategories = [
+        state.genres[0],
+        state.genres[2],
+        state.genres[9],
+        state.genres[16],
+        state.genres[17],
+      ];
 
-    selectedCategories.forEach((genre) => {
-      const config = {
+      selectedCategories.forEach((genre) => {
+        const config = {
+          method: "get",
+          url: `https://listen-api.listennotes.com/api/v2/best_podcasts?genre_id=${genre.id}&page=1&region=us&safe_mode=0`,
+          headers: {
+            "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
+          },
+        };
+        axios(config)
+          .then(function(response) {
+            document.body.classList.remove("fetchingInProgress");
+
+            const data = {
+              id: response.data.id,
+              genre: response.data.name,
+              podcasts: response.data.podcasts,
+            };
+            state.cache[data.genre] = null;
+            state.cache[`${data.genre}`] = data;
+            const trimmedDownGenre = {
+              id: data.id,
+              genre: data.genre,
+              podcasts: data.podcasts.splice(0, 3),
+            };
+            state.bestPodcasts.push(trimmedDownGenre);
+            actions.updateSubscriptionAfterFetch();
+            if (state.bestPodcasts.length > 4) {
+              Cacher.cache(state.bestPodcasts, "top");
+            }
+          })
+          .catch(function(error) {
+            document.body.classList.remove("fetchingInProgress");
+
+            console.log(error);
+          });
+      });
+    } else {
+      console.log("best from cache");
+      cachedPods.forEach((pod) => state.bestPodcasts.push(pod));
+      actions.updateSubscriptionAfterFetch();
+    }
+  },
+  fetchCuratedPods() {
+    actions.render(state.curated);
+    const cachedPods = JSON.parse(localStorage.getItem("curated"));
+    if (!cachedPods) {
+      document.body.classList.add("fetchingInProgress");
+      var config = {
         method: "get",
-        url: `https://listen-api.listennotes.com/api/v2/best_podcasts?genre_id=${genre.id}&page=1&region=us&safe_mode=0`,
+        url:
+          "https://listen-api.listennotes.com/api/v2/curated_podcasts?page=1",
         headers: {
           "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
         },
       };
+
       axios(config)
         .then(function(response) {
           document.body.classList.remove("fetchingInProgress");
 
-          const data = {
-            id: response.data.id,
-            genre: response.data.name,
-            podcasts: response.data.podcasts,
-          };
-          state.cache[data.genre] = null;
-          state.cache[`${data.genre}`] = data;
-          const trimmedDownGenre = {
-            id: data.id,
-            genre: data.genre,
-            podcasts: data.podcasts.splice(0, 3),
-          };
-          state.bestPodcasts.push(trimmedDownGenre);
-          actions.updateRenderAfterFetch();
+          console.log(response);
+          response.data.curated_lists.forEach((list) => {
+            const data = {
+              id: list.id,
+              genre: list.title,
+              podcasts: list.podcasts,
+            };
+            state.curated.push(data);
+            actions.updateSubscriptionAfterFetch();
+            Cacher.cache(state.curated, "curated");
+          });
         })
         .catch(function(error) {
           document.body.classList.remove("fetchingInProgress");
 
           console.log(error);
         });
-    });
-  },
-  fetchCuratedPods() {
-    document.body.classList.add("fetchingInProgress");
-
-    actions.render(state.curated);
-    var config = {
-      method: "get",
-      url: "https://listen-api.listennotes.com/api/v2/curated_podcasts?page=1",
-      headers: {
-        "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
-      },
-    };
-
-    axios(config)
-      .then(function(response) {
-        document.body.classList.remove("fetchingInProgress");
-
-        console.log(response);
-        response.data.curated_lists.forEach((list) => {
-          const data = {
-            id: list.id,
-            genre: list.title,
-            podcasts: list.podcasts,
-          };
-          state.curated.push(data);
-          actions.updateRenderAfterFetch();
-        });
-      })
-      .catch(function(error) {
-        document.body.classList.remove("fetchingInProgress");
-
-        console.log(error);
-      });
+    } else {
+      console.log("Curated from cache");
+      cachedPods.forEach((pod) => state.curated.push(pod));
+      actions.updateSubscriptionAfterFetch();
+    }
   },
   fetchByGenre({ commit }, page) {
-    document.body.classList.add("fetchingInProgress");
+    console.log(`${window.currentGenreID}`);
+    const cachedPods = JSON.parse(localStorage.getItem(window.currentGenreID));
+    if (!cachedPods) {
+      document.body.classList.add("fetchingInProgress");
 
-    if (page == 1) {
+      if (page == 1) {
+        actions.render(state.currentGenre);
+      }
+      var config = {
+        method: "get",
+        url: `https://listen-api.listennotes.com/api/v2/best_podcasts?genre_id=${window.currentGenreID}&page=${page}&region=us&safe_mode=0`,
+        headers: {
+          "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
+        },
+      };
+
+      axios(config)
+        .then(function(response) {
+          document.body.classList.remove("fetchingInProgress");
+          const data = {
+            id: response.data.id,
+            genre: response.data.name,
+            podcasts: response.data.podcasts,
+          };
+          console.log(data);
+          if (page == 1) {
+            state.currentGenre.push(data);
+            // state.cache[data.genre] = null;
+            // state.cache[`${data.genre}`] = data;
+          } else {
+            // data.podcasts.forEach((newPod) => {
+            //   console.log(state.cache[`${data.genre}`].podcasts.push(newPod));
+            // });
+          }
+          actions.updateSubscriptionAfterFetch();
+          Cacher.cache(state.currentGenre, window.currentGenreID);
+        })
+        .catch(function(error) {
+          document.body.classList.remove("fetchingInProgress");
+          console.log(error);
+        });
+    } else {
       actions.render(state.currentGenre);
+      cachedPods.forEach((pod) => state.currentGenre.push(pod));
+      actions.updateSubscriptionAfterFetch();
     }
-    var config = {
-      method: "get",
-      url: `https://listen-api.listennotes.com/api/v2/best_podcasts?genre_id=${window.currentGenreID}&page=${page}&region=us&safe_mode=0`,
-      headers: {
-        "X-ListenAPI-Key": "ebda0a8f7b964787bb9853b6433656f2",
-      },
-    };
-
-    axios(config)
-      .then(function(response) {
-        document.body.classList.remove("fetchingInProgress");
-
-        // console.log(?response);
-        const data = {
-          id: response.data.id,
-          genre: response.data.name,
-          podcasts: response.data.podcasts,
-        };
-        console.log(data);
-        if (page == 1) {
-          state.currentGenre.push(data);
-          state.cache[data.genre] = null;
-          state.cache[`${data.genre}`] = data;
-        } else {
-          data.podcasts.forEach((newPod) => {
-            console.log(state.cache[`${data.genre}`].podcasts.push(newPod));
-          });
-        }
-        actions.updateRenderAfterFetch();
-      })
-      .catch(function(error) {
-        document.body.classList.remove("fetchingInProgress");
-
-        console.log(error);
-      });
   },
   fetchPodcastData({ commit }, podcastID, nextEpPubDate) {
+    console.log(podcastID);
     document.body.classList.add("fetchingInProgress");
     document.body.classList.add("showPodcastData");
 
@@ -527,6 +550,43 @@ function timeFormatter(duration) {
   ret += "" + secs;
   return ret;
 }
+async function startRssSearch() {
+  const webview = document.querySelector("webview");
+  webview.addEventListener("dom-ready", () => {
+    let currentURL = webview.getURL();
+    let titlePage = webview.getTitle();
+    console.log("currentURL is : " + currentURL);
+    console.log("titlePage is : " + titlePage);
+
+    webview
+      .executeJavaScript(
+        `function gethtml () {
+    return new Promise((resolve, reject) => { resolve(document.documentElement.innerHTML); });
+    }
+    gethtml();`
+      )
+      .then((html) => {
+        extractLinks(html);
+      });
+  });
+}
+
+function extractLinks(html) {
+  const $ = cheerio.load(html);
+  $("a").each((i, element) => {
+    const link = $(element).attr("href");
+    if (link.includes("rss") || link.includes("feed")) {
+      console.log(link);
+    }
+  });
+}
+const Cacher = {
+  cache: (data, type) => {
+    localStorage.setItem(type, JSON.stringify(data));
+  },
+  fetchFromCache: () => {},
+  indexCache: () => {},
+};
 
 const mutations = {};
 

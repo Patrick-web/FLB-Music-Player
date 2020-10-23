@@ -31,9 +31,8 @@
       <h6 @click="showCurrentlyPlayingPodcast" id="playing-podName">
         {{ currentlyPlayingEpisode.podcast.name }}
       </h6>
-      <br />
       <h3>Show Notes</h3>
-      <p class="showNotes">{{ currentlyPlayingEpisode.description }}</p>
+      <p class="showNotes" v-html="currentlyPlayingEpisode.description"></p>
     </div>
     <button
       @click="changeSubscriptionStatus($event, currentlyPlayingEpisode.podcast)"
@@ -153,13 +152,13 @@ export default {
     padding: 5px;
     font-weight: 600;
     font-size: 1.25rem;
-    width: 80%;
+    width: 50%;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     bottom: 5px;
     transition: 0.2s ease;
-    border-radius: 2px;
+    border-radius: 8px;
   }
   .subBt:hover {
     cursor: pointer;
@@ -168,7 +167,7 @@ export default {
   }
   .subscribed {
     background: rgba(var(--base-one), var(--base-two), var(--base-three), 1);
-    border-radius: 20px;
+    border-radius: 12px;
   }
 }
 .grid2 {
@@ -212,7 +211,7 @@ export default {
   }
   .showNotes {
     font-weight: 300;
-    max-height: 250px;
+    max-height: 250px !important;
     overflow-y: scroll;
     padding-right: 5px;
   }

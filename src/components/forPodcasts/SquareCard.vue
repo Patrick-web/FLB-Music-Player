@@ -1,18 +1,7 @@
 <template>
-  <div @click="fetch($event, podID)" class="squareCard">
+  <div @click="fetch($event, podId)" class="squareCard">
     <div
-      @click.stop="
-        toggleSubscription(
-          $event,
-          podID,
-          podDescription,
-          podThumbnail,
-          podName,
-          isSubscribed,
-          genreIndex,
-          podcastIndex
-        )
-      "
+      @click.stop="toggleSubscription()"
       v-bind:class="{ issubscribed: isSubscribed }"
       class="expandArrow"
     >
@@ -27,8 +16,8 @@
     </div>
     <img id="blurred" :src="podThumbnail" alt />
     <div class="cardInfo">
-      <div class="infoTitle">{{ podName }} {{ isSubscribed }}</div>
-      <p style="display:none" id="podID">{{ podID }}</p>
+      <div class="infoTitle">{{ podName }}</div>
+      <p style="display:none" id="podId">{{ podId }}</p>
       <br />
       <!-- <div class="infoContent">{{ podDescription }}</div> -->
     </div>
@@ -38,20 +27,24 @@
 <script>
 import { mapActions } from "vuex";
 export default {
+  mounted() {
+    console.log(this.podId);
+    console.log(this.podName);
+  },
   methods: {
     ...mapActions([
       "fetchPodcastData",
       "subscribeToPodcast",
       "unSubscribeToPodcast",
-      "updateRender"
+      "updateRender",
     ]),
-    fetch(e, podID) {
+    fetch(e, podId) {
       /* if it is loaded then don't fetch 
   if its not loaded fetch and mark it as loaded
 */
       const target = e.currentTarget;
       if (!target.classList.contains("loadedPodcast")) {
-        this.fetchPodcastData(podID);
+        this.fetchPodcastData(podId);
         if (document.querySelector(".loadedPodcast")) {
           document
             .querySelector(".loadedPodcast")
@@ -62,50 +55,72 @@ export default {
       }
       document.body.classList.add("showPodcastData");
     },
-    toggleSubscription(
-      e,
-      podID,
-      podDescription,
-      podThumbnail,
-      podName,
-      isSubscribed,
-      genreIndex,
-      podcastIndex
-    ) {
-      if (isSubscribed) {
-        this.unSubscribeToPodcast(podID);
+    toggleSubscription() {
+      if (this.isSubscribed) {
         const data = {
-          genreIndex,
-          podcastIndex,
-          action: "unSub"
+          genreIndex: this.genreIndex,
+          podcastIndex: this.podcastIndex,
+          action: "unSub",
+          id: this.podId,
         };
+        if (document.body.classList.contains("currentTabIsSubscribed")) {
+          data.action = "unSubscribeFromSubsTab";
+        }
+        this.unSubscribeToPodcast(this.podId);
         this.updateRender(data);
       } else {
         const podcast = {
-          podId: podID,
-          description: podDescription,
-          name: podName,
-          thumbnail: podThumbnail
+          podId: this.podId,
+          description: this.podDescription,
+          name: this.podName,
+          thumbnail: this.podThumbnail,
+          website: this.website,
         };
         this.subscribeToPodcast(podcast);
         const data = {
-          genreIndex,
-          podcastIndex,
-          action: "sub"
+          genreIndex: this.genreIndex,
+          podcastIndex: this.podcastIndex,
+          action: "sub",
+          id: this.podId,
         };
         this.updateRender(data);
       }
-    }
+    },
   },
   props: {
-    podName: String,
-    podID: String,
-    podDescription: String,
-    podThumbnail: String,
-    isSubscribed: Boolean,
-    genreIndex: Number,
-    podcastIndex: Number
-  }
+    podName: {
+      default: null,
+      type: String,
+    },
+    podId: {
+      default: null,
+      type: String,
+    },
+    podDescription: {
+      default: null,
+      type: String,
+    },
+    podThumbnail: {
+      default: null,
+      type: String,
+    },
+    website: {
+      default: null,
+      type: String,
+    },
+    isSubscribed: {
+      default: null,
+      type: Boolean,
+    },
+    genreIndex: {
+      default: -1,
+      type: Number,
+    },
+    podcastIndex: {
+      default: null,
+      type: Number,
+    },
+  },
 };
 </script>
 

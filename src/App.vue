@@ -122,7 +122,10 @@ export default {
   padding: 0;
   font-family: "Roboto";
 }
-
+a {
+  color: white;
+  // pointer-events: none;
+}
 body {
   width: 100%;
   height: 100vh;

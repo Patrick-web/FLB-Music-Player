@@ -15,7 +15,6 @@
     <div @click="seek($event)" class="seekBar">
       <div class="seekProgress"></div>
       <div class="progressInfoCard">
-        <div class="point"></div>
         <div class="progressInfoWrapper">
           <div>
             <span>CurrentTime</span>
@@ -71,7 +70,7 @@ export default {
     }, 1000);
     progressBar.addEventListener("mousemove", (e) => {
       const posY = e.clientY - progressBar.getBoundingClientRect().y;
-      progressInfoCard.style.top = `${posY}px`;
+      progressInfoCard.style.top = `${posY - 30}px`;
       this.episodeDuration = this.timeFormatter(audio.duration);
 
       const percentageSeek = Math.ceil(
@@ -251,28 +250,23 @@ export default {
   justify-content: center;
   align-items: flex-start;
   transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  .point {
-    width: 0;
-    height: 0;
-    border-bottom: 15px solid transparent;
-    border-right: 15px solid rgb(255, 255, 255);
-    margin-right: -1px;
-  }
+  width: 130px;
   .progressInfoWrapper {
-    background: white;
+    background: rgba(63, 14, 77, 0.932);
     border-radius: 10px;
     border-top-left-radius: 0px;
-    color: rgba(0, 0, 0, 0.822);
+    color: rgb(255, 255, 255);
     padding: 5px;
     font-size: 0.8rem;
     box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.623);
+    backdrop-filter: saturate(180%) blur(15px);
     div {
       margin-bottom: 2px;
       display: flex;
       justify-content: space-between;
       span {
         margin-left: 5px;
-        font-weight: 300;
+        font-weight: 600;
       }
     }
   }

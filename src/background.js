@@ -53,6 +53,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false,
+      webviewTag: true,
     },
     autoHideMenuBar: true,
     icon: path.join(__static, "icon.png"),
@@ -69,6 +70,10 @@ function createWindow() {
 
   win.on("closed", () => {
     win = null;
+  });
+  win.webContents.on("new-window", function(e, url) {
+    e.preventDefault();
+    require("electron").shell.openExternal(url);
   });
 }
 

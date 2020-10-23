@@ -43,9 +43,9 @@
         </div>
         <div class="infoGroup">
           <h4 class="pill">Website</h4>
-          <p class="pill">
+          <a :href='currentPodcast.website' class="pill">
             {{ currentPodcast.website }}
-          </p>
+          </a>
         </div>
         <div class="infoGroup">
           <h4 class="pill">Description</h4>

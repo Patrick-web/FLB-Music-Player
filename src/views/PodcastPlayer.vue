@@ -1,5 +1,12 @@
 <template>
   <div class="view podcasts">
+    <!-- <webview
+      v-if="newlySubscribedWebsiteUrl"
+      style="min-height: 85vh;"
+      :src="newlySubscribedWebsiteUrl"
+      useragent="My Super Browser v1.0 Youpi Tralala !"
+    >
+    </webview> -->
     <TabSwitcher />
     <div class="contentView">
       <PodcastPage />
@@ -9,10 +16,10 @@
           <div class="genresCont">
             <br />
             <div class="genrePods">
-              <Scard
+              <PodcastCard
                 v-for="podcast in subscribed"
                 :key="podcast.podId"
-                :podID="podcast.podId"
+                :podId="podcast.podId"
                 :podName="podcast.name"
                 :podDescription="podcast.description"
                 :podThumbnail="podcast.thumbnail"
@@ -32,13 +39,14 @@
             >
               <p class="genreName">{{ genre.genre }}</p>
               <div class="genrePods">
-                <Scard
+                <PodcastCard
                   v-for="(podcast, pindex) in genre.podcasts"
                   :key="podcast.id"
-                  :podID="podcast.id"
+                  :podId="podcast.id"
                   :podName="podcast.title"
                   :podDescription="podcast.description"
                   :podThumbnail="podcast.image"
+                  :website="podcast.website"
                   :isSubscribed="podcast.isSubscribed"
                   :genreIndex="gindex"
                   :podcastIndex="pindex"
@@ -51,10 +59,8 @@
           <div class="tabTitle">Downloaded</div>
         </div>
       </div>
-      <!-- contentView -->
     </div>
     <div class="sidePane">
-      <!-- <pane /> -->
       <PlayingPane />
     </div>
   </div>
@@ -62,9 +68,8 @@
 <script>
 import TabSwitcher from "@/components/forPodcasts/tabSwitcher";
 import Titlebar from "@/components/forPodcasts/titlebar.vue";
-import Scard from "@/components/forPodcasts/SquareCard.vue";
+import PodcastCard from "@/components/forPodcasts/SquareCard.vue";
 import PlayingPane from "@/components/forPodcasts/PlayingPane.vue";
-import pane from "@/components/forPodcasts/pane.vue";
 import Genres from "@/components/forPodcasts/Genres.vue";
 import PodcastPage from "@/components/forPodcasts/PodcastPage.vue";
 import { mapGetters, mapActions } from "vuex";
@@ -98,7 +103,11 @@ export default {
   methods: {
     ...mapActions(["fetchByGenre", "loadedSubscribedFromStorage"]),
   },
-  computed: mapGetters(["dataToRender", "subscribed"]),
+  computed: mapGetters([
+    "dataToRender",
+    "subscribed",
+    "newlySubscribedWebsiteUrl",
+  ]),
   data() {
     return {
       render: true,
@@ -108,10 +117,9 @@ export default {
     PlayingPane,
     TabSwitcher,
     Titlebar,
-    Scard,
+    PodcastCard,
     Genres,
     PodcastPage,
-    pane,
   },
 };
 </script>

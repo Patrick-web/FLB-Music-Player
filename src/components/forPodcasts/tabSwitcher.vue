@@ -30,10 +30,12 @@ export default {
         case "subscribed":
           indicator.style.top = "5%";
           pagesWrapper.style.top = "0%";
+          document.body.classList.add("currentTabIsSubscribed");
           break;
         case "explorer":
           indicator.style.top = "46%";
           pagesWrapper.style.top = "-100%";
+          document.body.classList.remove("currentTabIsSubscribed");
           break;
         case "downloaded":
           indicator.style.top = "84%";
