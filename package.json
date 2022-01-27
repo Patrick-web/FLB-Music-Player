@@ -27,7 +27,7 @@
     "rss-parser": "^3.9.0",
     "sass-loader": "^8.0.2",
     "simplex-noise": "^2.4.0",
-    "three": "^0.116.1",
+    "three": "^0.137.0",
     "typeface-roboto": "0.0.75",
     "uuidv4": "^6.0.6",
     "vue": "^2.6.11",
