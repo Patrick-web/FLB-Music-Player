@@ -23,7 +23,7 @@
     "move-file": "^2.0.0",
     "music-metadata": "^6.4.0",
     "node-id3": "^0.1.17",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "rss-parser": "^3.9.0",
     "sass-loader": "^8.0.2",
     "simplex-noise": "^2.4.0",
